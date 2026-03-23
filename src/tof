@@ -1,0 +1,21 @@
+const int stopDistance = 200;
+
+// void setup ............
+
+void loop(){
+    int distance = sensor.readRangeContinuousMillimeters();
+    
+    // whenever the tof sensor senses something in a specific range
+    // the stepper motor stops
+    if (distance < stopDistance) {
+     // Stop the motor
+     digitalWrite(motorPin1, LOW);
+     digitalWrite(motorPin2, LOW);
+     analogWrite(enablePin, 0);
+  } else {
+     // Keep the motor running
+     digitalWrite(motorPin1, HIGH);
+     digitalWrite(motorPin2, LOW);
+     analogWrite(enablePin, 200);
+  } // we still have to specify the code for our specific motor
+}
