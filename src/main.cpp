@@ -3,9 +3,6 @@
 #include <Wire.h>
 #include <VL53L0X.h>
 
-// ============================================
-// PIN DEFINITIONS
-// ============================================
 
 // === Servos (PWM pins) ===
 const int SERVO1_PWM_PIN = 2;
@@ -31,9 +28,7 @@ const int TOF_SCL_PIN = 21;
 const int ULTRASONIC_TRIG_PIN = 22;
 const int ULTRASONIC_ECHO_PIN = 23;
 
-// ============================================
 // OBJECT DECLARATIONS
-// ============================================
 
 // Servos
 Servo servo1;
@@ -49,14 +44,12 @@ AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN)
 // ToF Sensor
 VL53L0X tofSensor;
 
-// ============================================
+
 // SETUP
-// ============================================
 
 void setup() {
     // Start serial for debugging
     Serial.begin(9600);
-    Serial.println("SIM2 Pick & Place Starting...");
 
     // --- Servo Setup ---
     servo1.attach(SERVO1_PWM_PIN);
@@ -86,9 +79,4 @@ void setup() {
         tofSensor.startContinuous();
     }
 
-    // --- Ultrasonic Sensor Setup ---
-    pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
-    pinMode(ULTRASONIC_ECHO_PIN, INPUT);
-
-    Serial.println("Setup complete");
 }
