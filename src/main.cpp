@@ -50,7 +50,6 @@ AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN)
 VL53L0X tofSensor;
 
 
-// SETUP
 
 void setup() {
     // Start serial for debugging
