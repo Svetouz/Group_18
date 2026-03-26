@@ -25,8 +25,14 @@ const int MOTOR_N2B_PIN = 11;
 const int TOF_SDA_PIN = 20;
 const int TOF_SCL_PIN = 21;
 
-
 // OBJECT DECLARATIONS
+void writeServos(int angle1,int angle2, int angle3, int angle4){
+  //Writes angles to the servos, input in degrees.
+  shoulder.write(angle1);
+  elbow.write(angle2);
+  wrist.write(angle3);
+  gripper.write(angle4);
+}
 
 // Servos
 Servo shoulder;
@@ -43,9 +49,6 @@ AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN)
 // ToF Sensor
 VL53L0X tofSensor;
 
-void setServos(shoulder, elbow, wrist){
-  servo.write()
-}
 
 // SETUP
 
@@ -60,9 +63,11 @@ void setup() {
     gripper.attach(GRIPPER_PWM_PIN);
 
     // Move servos to starting position (90 degrees = center)
-    servo1.write(90);
-    servo2.write(90);
-    servo3.write(90);
+    writeServos(90,90,90,90);
+    // shoulder.write(90);
+    // elbow.write(90);
+    // wrist.write(90);
+    // gripper.write(90);
 
     // --- Stepper Setup (Step/Dir mode) ---
     pinMode(MOTOR_EN_PIN, OUTPUT);
