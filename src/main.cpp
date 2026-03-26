@@ -5,9 +5,10 @@
 
 
 // === Servos (PWM pins) ===
-const int SERVO1_PWM_PIN = 2;
-const int SERVO2_PWM_PIN = 3;
-const int SERVO3_PWM_PIN = 4;
+const int SHOULDER_PWM_PIN = 2;
+const int ELBOW_PWM_PIN = 3;
+const int WRIST_PWM_PIN = 4;
+const int GRIPPER_PWM_PIN = 12;
 
 // === Motor Driver - Step/Dir Mode ===
 const int MOTOR_STEP_PIN = 5;
@@ -24,16 +25,14 @@ const int MOTOR_N2B_PIN = 11;
 const int TOF_SDA_PIN = 20;
 const int TOF_SCL_PIN = 21;
 
-// === Ultrasonic Sensor ===
-const int ULTRASONIC_TRIG_PIN = 22;
-const int ULTRASONIC_ECHO_PIN = 23;
 
 // OBJECT DECLARATIONS
 
 // Servos
-Servo servo1;
-Servo servo2;
-Servo servo3;
+Servo shoulder;
+Servo elbow;
+Servo wrist;
+Servo gripper;
 
 // Stepper - Step/Dir mode (use ONE of these, not both)
 AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN);
@@ -44,6 +43,9 @@ AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN)
 // ToF Sensor
 VL53L0X tofSensor;
 
+void setServos(shoulder, elbow, wrist){
+  servo.write()
+}
 
 // SETUP
 
@@ -52,9 +54,10 @@ void setup() {
     Serial.begin(9600);
 
     // --- Servo Setup ---
-    servo1.attach(SERVO1_PWM_PIN);
-    servo2.attach(SERVO2_PWM_PIN);
-    servo3.attach(SERVO3_PWM_PIN);
+    shoulder.attach(SHOULDER_PWM_PIN);
+    elbow.attach(ELBOW_PWM_PIN);
+    wrist.attach(WRIST_PWM_PIN);
+    gripper.attach(GRIPPER_PWM_PIN);
 
     // Move servos to starting position (90 degrees = center)
     servo1.write(90);
@@ -66,17 +69,23 @@ void setup() {
     digitalWrite(MOTOR_EN_PIN, LOW);  // LOW = enabled on most drivers
 
     stepperStepDir.setMaxSpeed(1000);      // steps per second
-    stepperStepDir.setAcceleration(500);   // steps per second per second
+    stepperStepDir.setAcceleration(500);   // steps per second
 
-    // --- ToF Sensor Setup (I2C) ---
-    Wire.begin();  // Uses pins 20 (SDA) and 21 (SCL) automatically on Mega
+    // // --- ToF Sensor Setup (I2C) ---
+    // Wire.begin();  // Uses pins 20 (SDA) and 21 (SCL) automatically on Mega
 
-    if (!tofSensor.init()) {
-        Serial.println("ToF sensor not found!");
-    } else {
-        Serial.println("ToF sensor initialized");
-        tofSensor.setTimeout(500);
-        tofSensor.startContinuous();
-    }
+    // if (!tofSensor.init()) {
+    //     Serial.println("ToF sensor not found!");
+    // } else {
+    //     Serial.println("ToF sensor initialized");
+    //     tofSensor.setTimeout(500);
+    //     tofSensor.startContinuous();
+    // }
+
+}
+
+
+
+void loop(){
 
 }
