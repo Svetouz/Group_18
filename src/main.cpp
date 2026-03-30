@@ -25,6 +25,12 @@ const int MOTOR_N2B_PIN = 11;
 const int TOF_SDA_PIN = 20;
 const int TOF_SCL_PIN = 21;
 
+// Servos
+Servo shoulder;
+Servo elbow;
+Servo wrist;
+Servo gripper;
+
 // OBJECT DECLARATIONS
 void writeServos(int angle1,int angle2, int angle3, int angle4){
   //Writes angles to the servos, input in degrees.
@@ -33,13 +39,6 @@ void writeServos(int angle1,int angle2, int angle3, int angle4){
   wrist.write(angle3);
   gripper.write(angle4);
 }
-
-// Servos
-Servo shoulder;
-Servo elbow;
-Servo wrist;
-Servo gripper;
-
 // Stepper - Step/Dir mode (use ONE of these, not both)
 AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN);
 
