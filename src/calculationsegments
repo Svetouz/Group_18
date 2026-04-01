@@ -1,0 +1,31 @@
+long first position = 0;
+long second position  = 0;
+long third position =0:
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Enter a position:");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    targetPosition = Serial.parseInt();  // read first value
+    
+    Serial.println("Enter a speed:");
+    
+    while (Serial.available() == 0) {}  // wait for second input
+    targetSpeed = Serial.parseInt();    // read second value
+
+    Serial.print("Moving to position: ");
+    Serial.print(targetPosition);
+    Serial.print(" at speed: ");
+    Serial.println(targetSpeed);
+
+    // Now use both values
+    stepper.setMaxSpeed(targetSpeed);
+    stepper.moveTo(targetPosition);
+    stepper.runToPosition();
+
+    Serial.println("Done! Enter a new position:");
+  }
+} 
