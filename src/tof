@@ -12,7 +12,7 @@ void loop(){
      digitalWrite(motorPin1, LOW);
      digitalWrite(motorPin2, LOW);
      analogWrite(enablePin, 0);
-  } else {
+    } else {
      // Keep the motor running
      digitalWrite(motorPin1, HIGH);
      digitalWrite(motorPin2, LOW);
