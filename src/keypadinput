@@ -1,0 +1,29 @@
+#include <keypad.h>
+
+// how many rows and collums
+const byte ROWS = 4;
+const byte COLS = 4;
+
+// array to represent keys on keypad
+char hexaKeys [ROWS][COLS] ={
+    {'1','2','3','A'},
+    {'4','5','6','B'},
+    {'7','8','9','C'},
+    {'*','0','#','D'}
+};
+
+// pin numbers
+byte rowPins[ROWS] = {9, 8, 7, 6};
+byte colPins[COLS] = {5, 4, 3, 2};
+
+// setup: name the keypad, tell the computer wich pins to use and the size of the keypad
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop(){
+
+    
+}
