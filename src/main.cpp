@@ -90,5 +90,11 @@ void setup() {
 
 
 void loop(){
-
+  //for finding endopoints of a servo (currently wrist)
+  for (int i = 180; i>0 ; i = i -2)
+  {
+    writeServos(0,0,0,i);    
+    Serial.println("Angle: " + i);
+    delay(250);
+  };
 }

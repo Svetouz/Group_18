@@ -39,8 +39,8 @@ void loop() {
     reZero();  // Call the re-zero function
   }
 
- stepper.moveTo(1600);    -- move to step 1600
- stepper.runToPosition(); -- execute the move and wait until done
+ stepper.moveTo(1600);    // move to step 1600
+ stepper.runToPosition(); // execute the move and wait until done
 }
 
 void reZero() {
