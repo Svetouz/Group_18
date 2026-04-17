@@ -7,8 +7,6 @@ const int enablePin = 5;
 const int zeroPin   = 6;  // Button that sets the current position as zero
 
 // Create a stepper object using the AccelStepper library
-// AccelStepper::DRIVER tells the library we're using a step/dir driver
-// stepPin and dirPin tell it which pins to pulse
 AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 
 void setup() {
@@ -22,10 +20,8 @@ void setup() {
   // Most drivers are active LOW, so LOW = enabled, HIGH = disabled
   digitalWrite(enablePin, LOW);
 
-  // 1000 steps per second at maximum
   stepper.setMaxSpeed(1000);
 
-  // Set how quickly the motor ramps up and slows down
   // 500 means it increases speed by 500 steps/second every second
   stepper.setAcceleration(500);
 
@@ -36,11 +32,11 @@ void setup() {
 void loop() {
   // Continuously check if the zero button is being pressed
   if (digitalRead(zeroPin) == LOW) {
-    reZero();  // Call the re-zero function
+    reZero();  
   }
 
- stepper.moveTo(1600);    // move to step 1600
- stepper.runToPosition(); // execute the move and wait until done
+ stepper.moveTo(1600);    
+ stepper.runToPosition(); 
 }
 
 void reZero() {
