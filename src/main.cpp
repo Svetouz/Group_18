@@ -71,8 +71,8 @@ void setup() {
     pinMode(MOTOR_EN_PIN, OUTPUT);
     digitalWrite(MOTOR_EN_PIN, LOW);  // LOW = enabled on most drivers
 
-    stepperStepDir.setMaxSpeed(1000);      // steps per second
-    stepperStepDir.setAcceleration(500);   // steps per second
+    stepperStepDir.setMaxSpeed(800);      // steps per second
+    stepperStepDir.setAcceleration(400);   // steps per second
 
     // // ToF Sensor Setup (I2C)
     // Wire.begin();  // Uses pins 20 (SDA) and 21 (SCL) automatically on Mega
