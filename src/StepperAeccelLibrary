@@ -22,10 +22,10 @@ void setup() {
   // Most drivers are active LOW, so LOW = enabled, HIGH = disabled
   digitalWrite(enablePin, LOW);
 
-  stepper.setMaxSpeed(500);
+  stepper.setMaxSpeed(800);
 
   // 500 means it increases speed by 500 steps/second every second
-  stepper.setAcceleration(200);
+  stepper.setAcceleration(500);
 
   // Declare the startup position as zero
   stepper.move(1000000);
