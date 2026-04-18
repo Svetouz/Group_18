@@ -3,7 +3,7 @@
 // --- Pin definitions ---
 const int stepPin   = 3;  
 const int dirPin    = 4;  // Tells the driver which direction to go
-const int enablePin = 5;  
+//const int enablePin = 5;  // grounded in Fabio's pin setup, active LOW
 const int zeroPin   = 6;  // Button that sets the current position as zero
 
 // Create a stepper object using the AccelStepper library
@@ -12,7 +12,7 @@ AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 bool homed = false;
 
 void setup() {
-  pinMode(enablePin, OUTPUT);
+  //pinMode(enablePin, OUTPUT);
   // INPUT_PULLUP means the pin reads HIGH by default
   // and only goes LOW when the button connects it to GND
   // this means there in no need for an  external resistor
@@ -20,7 +20,7 @@ void setup() {
 
   // Enable the motor driver
   // Most drivers are active LOW, so LOW = enabled, HIGH = disabled
-  digitalWrite(enablePin, LOW);
+ // digitalWrite(enablePin, LOW);
 
   stepper.setMaxSpeed(800);
 
@@ -37,7 +37,7 @@ void loop() {
             stepper.stop();
             stepper.setCurrentPosition(0); // set home/zero position
             homed = true;
-            digitalWrite(enablePin, HIGH); // disable driver after homing
+           //digitalWrite(enablePin, HIGH); // disable driver after homing
         } else {
             stepper.run();
         }
