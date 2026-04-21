@@ -2,6 +2,7 @@
 #include <AccelStepper.h>
 #include <Wire.h>
 #include <VL53L0X.h>
+#include "Reach_and_grab.h"
 
 
 // Servos (PWM pins)
@@ -33,13 +34,6 @@ Servo wrist;
 Servo gripper;
 
 // Helper functions
-void writeServos(int angle1,int angle2, int angle3, int angle4){
-  //Writes angles to the servos, input in degrees.
-  shoulder.write(angle1);
-  elbow.write(angle2);
-  wrist.write(angle3);
-  gripper.write(angle4);
-}
 
 // Stepper - Step/Dir mode (use ONE of these, not both)
 AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN);
@@ -55,29 +49,21 @@ void setup() {
     wrist.attach(WRIST_PWM_PIN);
     gripper.attach(GRIPPER_PWM_PIN);
 
-    // Move servos to starting position 
-    //writeServos(90,90,90,90); // ATTENTION, need to figure out desired 
-    //position of arm
-
-    // Stepper Setup (Step/Dir mode)
-    //NEEDS CHANGING BECAUSE NO EN PIN USED
-    //pinMode(MOTOR_EN_PIN, OUTPUT); 
-    //digitalWrite(MOTOR_EN_PIN, LOW);  // LOW = enabled on most drivers
 
     stepperStepDir.setMaxSpeed(800);      // steps per second
     stepperStepDir.setAcceleration(500);   // steps per second
-
 
 }
 
 
 
 void loop(){
-  //for finding endopoints of a servo (currently wrist)
-  for (int i = 180; i>0 ; i = i -2)
-  {
-    writeServos(0,0,0,i);    
-    Serial.println("Angle: " + i);
-    delay(250);
-  };
+  reachAndGrab();
+  // //for finding endopoints of a servo (currently wrist)
+  // for (int i = 180; i>0 ; i = i -2)
+  // {
+  //   writeServos(0,0,0,i);    
+  //   Serial.println("Angle: " + i);
+  //   delay(250);
+  // };
 }
