@@ -1,25 +1,14 @@
 #include <Arduino.h>
 #include "Servo.h"
+#include "Reach_and_grab.h"
 
 //Global Variables
-Servo shoulder;
-Servo elbow;
-Servo wrist;
-Servo gripper;
 
 int openGrip = 0; //Angle that opens the gripper, placeholder value, 
 int closeGrip = 30; //Angle that closes the gripper, placeholder value
 int startShoulder = 90; //Starting angle for shoulder, placeholder value
 int startElbow = 90; //Starting angle for elbow, placeholder value
 int startWrist = 90; //Starting angle for wrist, placeholder value
-
-// Helper functions
-struct ServoAngles{
-    int angle1;
-    int angle2;
-    int angle3;
-    int angle4;
-};
 
 // To be reused to store the last written angles, initial values co-
 //rrespond to the starting position of the arm
