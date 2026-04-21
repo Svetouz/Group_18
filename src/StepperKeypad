@@ -7,11 +7,11 @@
 //M2 → GND
 
 //MS1	MS2	MS3	Microstep Resolution
-//Low	Low	Low	Full step
-//High	Low	Low	Half step
-//Low	High	Low	Quarter step
-//High	High	Low	Eighth step
-//High	High	High	Sixteenth step
+//Low	Low	 Low	Full step
+//High	Low	 Low	Half step
+//Low	High Low	Quarter step
+//High	High Low	Eighth step
+//High	High High	Sixteenth step
 
 // --- Pin definitions ---
 const int stepPin   = 3;  
@@ -62,8 +62,8 @@ int sector3 = 0;
   //delay(1000);
 //}
 
-// ammount of steps in a full rotation is 265
-// so 256 step devided by 24 sectors
+// ammount of steps in a full rotation is 200
+// so 200 step devided by 24 sectors
 
 void setup() {
   Serial.begin(9600);
