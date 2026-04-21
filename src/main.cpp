@@ -58,7 +58,8 @@ void setup() {
 
 
 void loop(){
-  reachAndGrab();
+  writeServos(0);
+  //reachAndGrab();
   // //for finding endopoints of a servo (currently wrist)
   // for (int i = 180; i>0 ; i = i -2)
   // {

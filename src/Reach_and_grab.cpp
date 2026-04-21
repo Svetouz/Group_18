@@ -4,11 +4,11 @@
 
 //Global Variables
 
-int openGrip = 0; //Angle that opens the gripper, placeholder value, 
-int closeGrip = 30; //Angle that closes the gripper, placeholder value
-int startShoulder = 90; //Starting angle for shoulder, placeholder value
-int startElbow = 90; //Starting angle for elbow, placeholder value
-int startWrist = 90; //Starting angle for wrist, placeholder value
+int openGrip; //Angle that opens the gripper, placeholder value, 
+int closeGrip; //Angle that closes the gripper, placeholder value
+int startShoulder; //Starting angle for shoulder, placeholder value
+int startElbow; //Starting angle for elbow, placeholder value
+int startWrist; //Starting angle for wrist, placeholder value
 
 // To be reused to store the last written angles, initial values co-
 //rrespond to the starting position of the arm
