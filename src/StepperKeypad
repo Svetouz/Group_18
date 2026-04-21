@@ -10,8 +10,6 @@ const int zeroPin   = 6;  // Button that sets the current position as zero
 // Create a stepper object using the AccelStepper library
 AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 
-bool homed = false;
-
 // --- keypad setup ---
 const byte ROWS = 4;
 const byte COLS = 4;
@@ -28,7 +26,7 @@ byte colPins[COLS] = {5, 4, 3, 2};
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-const int MAX_SECTORS = 23;
+const int MAX_SECTORS = 23; // maximal input for keypad
 
 // --- state tracking ---
 bool started = false;
@@ -52,6 +50,8 @@ int sector3 = 0;
   //delay(1000);
 //}
 
+// ammount of steps in a full rotation is 256
+// so 256 step devided by 24 sectors
 
 void setup() {
   Serial.begin(9600);
@@ -64,21 +64,9 @@ void setup() {
 
   stepper.setAcceleration(500);
 
-  stepper.move(1000000);
+  stepper.setCurrentPosition(0);
 }
 
-void loop() {
-    if (!homed) {
-        if (digitalRead(zeroPin) == LOW) {
-            stepper.stop();
-            stepper.setCurrentPosition(0); // set home/zero position
-            homed = true;
-           //digitalWrite(enablePin, HIGH); // disable driver after homing
-        } else {
-            stepper.run();
-        }
-    }
-}
 
 void loop() {
   char key = keypad.getKey();
