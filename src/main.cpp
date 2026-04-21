@@ -44,12 +44,6 @@ void writeServos(int angle1,int angle2, int angle3, int angle4){
 // Stepper - Step/Dir mode (use ONE of these, not both)
 AccelStepper stepperStepDir(AccelStepper::DRIVER, MOTOR_STEP_PIN, MOTOR_DIR_PIN);
 
-// Stepper - Direct coil control (alternative)
-// AccelStepper stepperCoil(AccelStepper::FULL4WIRE, MOTOR_N1A_PIN, MOTOR_N1B_PIN, MOTOR_N2A_PIN, MOTOR_N2B_PIN);
-
-// ToF Sensor
-VL53L0X tofSensor;
-
 
 void setup() {
     // Start serial for debugging
@@ -62,11 +56,8 @@ void setup() {
     gripper.attach(GRIPPER_PWM_PIN);
 
     // Move servos to starting position 
-    //writeServos(90,90,90,90);
-    // shoulder.write(90);
-    // elbow.write(90);
-    // wrist.write(90);
-    // gripper.write(90);
+    //writeServos(90,90,90,90); // ATTENTION, need to figure out desired 
+    //position of arm
 
     // Stepper Setup (Step/Dir mode)
     //NEEDS CHANGING BECAUSE NO EN PIN USED
@@ -74,18 +65,8 @@ void setup() {
     //digitalWrite(MOTOR_EN_PIN, LOW);  // LOW = enabled on most drivers
 
     stepperStepDir.setMaxSpeed(800);      // steps per second
-    stepperStepDir.setAcceleration(400);   // steps per second
+    stepperStepDir.setAcceleration(500);   // steps per second
 
-    // // ToF Sensor Setup (I2C)
-    // Wire.begin();  // Uses pins 20 (SDA) and 21 (SCL) automatically on Mega
-
-    // if (!tofSensor.init()) {
-    //     Serial.println("ToF sensor not found!");
-    // } else {
-    //     Serial.println("ToF sensor initialized");
-    //     tofSensor.setTimeout(500);
-    //     tofSensor.startContinuous();
-    // }
 
 }
 
