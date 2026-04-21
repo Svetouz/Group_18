@@ -1,5 +1,17 @@
 #include <Keypad.h>
-#include <AccelStepper.h>  
+#include <AccelStepper.h> 
+
+// wireing for half steps:
+//M0 → 3.3V
+//M1 → GND
+//M2 → GND
+
+//MS1	MS2	MS3	Microstep Resolution
+//Low	Low	Low	Full step
+//High	Low	Low	Half step
+//Low	High	Low	Quarter step
+//High	High	Low	Eighth step
+//High	High	High	Sixteenth step
 
 // --- Pin definitions ---
 const int stepPin   = 3;  
@@ -50,7 +62,7 @@ int sector3 = 0;
   //delay(1000);
 //}
 
-// ammount of steps in a full rotation is 256
+// ammount of steps in a full rotation is 265
 // so 256 step devided by 24 sectors
 
 void setup() {
