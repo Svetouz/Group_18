@@ -5,21 +5,22 @@
 
 
 // Servos (PWM pins)
-const int SHOULDER_PWM_PIN = 2;
-const int ELBOW_PWM_PIN = 3;
-const int WRIST_PWM_PIN = 4;
-const int GRIPPER_PWM_PIN = 12;
+const int SHOULDER_PWM_PIN = 12;
+const int ELBOW_PWM_PIN = 11;
+const int WRIST_PWM_PIN = 10;
+const int GRIPPER_PWM_PIN = 9;
 
 // Motor Driver
-const int MOTOR_STEP_PIN = 5;
-const int MOTOR_DIR_PIN = 6;
-const int MOTOR_EN_PIN = 7;
+const int MOTOR_STEP_PIN = 3;
+const int MOTOR_DIR_PIN = 2;
+// const int MOTOR_EN_PIN = 7; // is floating
 
-// Motor Driver
-const int MOTOR_N1A_PIN = 8;
-const int MOTOR_N1B_PIN = 9;
-const int MOTOR_N2A_PIN = 10;
-const int MOTOR_N2B_PIN = 11;
+// Motor Driver correspond to MS pins, should be THREE of them,
+// of which only TWO are being used!! placeholder pin numbers
+const int MOTOR_N1A_PIN = 1;
+const int MOTOR_N1B_PIN = 5;
+const int MOTOR_N2A_PIN = 6;
+const int MOTOR_N2B_PIN = 7;
 
 // ToF Sensor
 const int TOF_SDA_PIN = 20;
@@ -61,15 +62,16 @@ void setup() {
     gripper.attach(GRIPPER_PWM_PIN);
 
     // Move servos to starting position 
-    writeServos(90,90,90,90);
+    //writeServos(90,90,90,90);
     // shoulder.write(90);
     // elbow.write(90);
     // wrist.write(90);
     // gripper.write(90);
 
     // Stepper Setup (Step/Dir mode)
-    pinMode(MOTOR_EN_PIN, OUTPUT);
-    digitalWrite(MOTOR_EN_PIN, LOW);  // LOW = enabled on most drivers
+    //NEEDS CHANGING BECAUSE NO EN PIN USED
+    //pinMode(MOTOR_EN_PIN, OUTPUT); 
+    //digitalWrite(MOTOR_EN_PIN, LOW);  // LOW = enabled on most drivers
 
     stepperStepDir.setMaxSpeed(800);      // steps per second
     stepperStepDir.setAcceleration(400);   // steps per second
