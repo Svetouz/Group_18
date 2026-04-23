@@ -1,166 +1,164 @@
-#include <Keypad.h>
-#include <AccelStepper.h> 
+// #include <Keypad.h>
+// #include <AccelStepper.h> 
 
-// wireing for half steps:
-//M0 → 3.3V
-//M1 → GND
-//M2 → GND
+// // wireing for half steps:
+// //M0 → 3.3V
+// //M1 → GND
+// //M2 → GND
 
-//MS1	MS2	MS3	Microstep Resolution
-//Low	Low	 Low	Full step
-//High	Low	 Low	Half step
-//Low	High Low	Quarter step
-//High	High Low	Eighth step
-//High	High High	Sixteenth step
+// //MS1	MS2	MS3	Microstep Resolution
+// //Low	Low	 Low	Full step
+// //High	Low	 Low	Half step
+// //Low	High Low	Quarter step
+// //High	High Low	Eighth step
+// //High	High High	Sixteenth step
 
-// --- Pin definitions ---
-const int stepPin   = 3;  
-const int dirPin    = 4;  // Tells the driver which direction to go
-//const int enablePin = 5;  // grounded in Fabio's pin setup, active LOW
-const int zeroPin   = 6;  // Button that sets the current position as zero
-#define MS1 4    // connect M0 to Arduino pin 4
-#define MS2 5    // connect M1 to Arduino pin 5
-#define MS3 6    // connect M2 to Arduino pin 6
+// // --- Pin definitions ---
+// const int stepPin   = 3;  
+// const int dirPin    = 4;  // Tells the driver which direction to go
+// //const int enablePin = 5;  // grounded in Fabio's pin setup, active LOW
+// const int zeroPin   = 6;  // Button that sets the current position as zero
+// #define MS1 4    // connect M0 to Arduino pin 4
+// #define MS2 5    // connect M1 to Arduino pin 5
+// #define MS3 6    // connect M2 to Arduino pin 6
+// #define STEPS_PER_SECTOR   (STEPS_PER_ROTATION / NUM_SECTORS)
 
-// Create a stepper object using the AccelStepper library
-AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
+// // Create a stepper object using the AccelStepper library
+// AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 
-// --- keypad setup ---
-const byte ROWS = 4;
-const byte COLS = 4;
+// // --- keypad setup ---
+// const byte ROWS = 4;
+// const byte COLS = 4;
 
-char keys[ROWS][COLS] = {
-  {'1','2','3','A'},
-  {'4','5','6','B'},
-  {'7','8','9','C'},
-  {'*','0','#','D'}
-};
+// char keys[ROWS][COLS] = {
+//   {'1','2','3','A'},
+//   {'4','5','6','B'},
+//   {'7','8','9','C'},
+//   {'*','0','#','D'}
+// };
 
-byte rowPins[ROWS] = {9, 8, 7, 6};
-byte colPins[COLS] = {5, 4, 3, 2};
+// byte rowPins[ROWS] = {9, 8, 7, 6};
+// byte colPins[COLS] = {5, 4, 3, 2};
 
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+// Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-const int MAX_SECTORS = 23; // maximal input for keypad
+// const int MAX_SECTORS = 23; // maximal input for keypad
 
-// --- state tracking ---
-bool started = false;
-int currentSector = 1;    // which sector we are currently entering (1, 2 or 3)
-int digitCount = 0;       // which digit of the current sector (1 or 2)
-char firstDigit;          // temporary storage for the first digit
+// // --- state tracking ---
+// bool started = false;
+// int currentSector = 1;    // which sector we are currently entering (1, 2 or 3)
+// int digitCount = 0;       // which digit of the current sector (1 or 2)
+// char firstDigit;          // temporary storage for the first digit
 
-// --- sector variables ---
-int sector1 = 0;
-int sector2 = 0;
-int sector3 = 0;
+// // --- sector variables ---
+// int sector1 = 0;
+// int sector2 = 0;
+// int sector3 = 0;
 
-//void moveToSector(int sector) {
- // int angle = 180 * ((float)sector / MAX_SECTORS);
- // Serial.print("Moving to sector ");
- // Serial.print(sector);
- // Serial.print(" (");
- // Serial.print(angle);
- // Serial.println(" degrees)");
-  //armServo.write(angle);
-  //delay(1000);
-//}
+// void moveToSector(int sector) {
+//   // Clamp sector between 0 and 23
+//   sector = constrain(sector, 0, NUM_SECTORS - 1);
+  
+//   long targetStep = sector * STEPS_PER_SECTOR;
+//   stepper.runToNewPosition(targetStep);
+// }
 
-// ammount of steps in a full rotation is 200
-// so 200 step devided by 24 sectors
+// // ammount of steps in a full rotation is 200
+// // so 200 step devided by 24 sectors
 
-void setup() {
-  Serial.begin(9600);
-  Serial.println("Press * to start...");
+// void setup() {
+//   Serial.begin(9600);
+//   Serial.println("Press * to start...");
 
   
-  pinMode(zeroPin, INPUT_PULLUP);
+//   pinMode(zeroPin, INPUT_PULLUP);
 
-  stepper.setMaxSpeed(800);
+//   stepper.setMaxSpeed(800);
 
-  stepper.setAcceleration(500);
+//   stepper.setAcceleration(500);
 
-  stepper.setCurrentPosition(0);
+//   stepper.setCurrentPosition(0);
 
-  pinMode(MS1, OUTPUT);
-  pinMode(MS2, OUTPUT);
-  pinMode(MS3, OUTPUT);
+//   pinMode(MS1, OUTPUT);
+//   pinMode(MS2, OUTPUT);
+//   pinMode(MS3, OUTPUT);
 
-  // Half step = HIGH, LOW, LOW
-  digitalWrite(MS1, HIGH);
-  digitalWrite(MS2, LOW);
-  digitalWrite(MS3, LOW);
-}
+//   // Half step = HIGH, LOW, LOW
+//   digitalWrite(MS1, HIGH);
+//   digitalWrite(MS2, LOW);
+//   digitalWrite(MS3, LOW);
+// }
 
 
-void loop() {
-  char key = keypad.getKey();
+// void loop() {
+//   char key = keypad.getKey();
 
-  if (key) {
+//   if (key) {
 
-    // wait for * to begin
-    if (!started) {
-      if (key == '*') {
-        started = true;
-        currentSector = 1;
-        digitCount = 0;
-        Serial.print("Enter sector 1, digit 1: ");
-      }
+//     // wait for * to begin
+//     if (!started) {
+//       if (key == '*') {
+//         started = true;
+//         currentSector = 1;
+//         digitCount = 0;
+//         Serial.print("Enter sector 1, digit 1: ");
+//       }
 
-    } else {
+//     } else {
 
-      if (key >= '0' && key <= '9') {
+//       if (key >= '0' && key <= '9') {
 
-        if (digitCount == 0) {
-          // first digit, just store it temporarily
-          firstDigit = key;
-          digitCount = 1;
-          Serial.println(key);
-          Serial.print("Sector ");
-          Serial.print(currentSector);
-          Serial.print(", digit 2: ");
+//         if (digitCount == 0) {
+//           // first digit, just store it temporarily
+//           firstDigit = key;
+//           digitCount = 1;
+//           Serial.println(key);
+//           Serial.print("Sector ");
+//           Serial.print(currentSector);
+//           Serial.print(", digit 2: ");
 
-        } else {
-          // second digit, combine with first to make the sector number
-          int sectorValue = (firstDigit - '0') * 10 + (key - '0');
-          Serial.println(key);
+//         } else {
+//           // second digit, combine with first to make the sector number
+//           int sectorValue = (firstDigit - '0') * 10 + (key - '0');
+//           Serial.println(key);
 
-          if (sectorValue > MAX_SECTORS) {
-            // invalid, ask again
-            Serial.print("Sector does not exist! Enter sector ");
-            Serial.print(currentSector);
-            Serial.print(", digit 1: ");
-            digitCount = 0;
+//           if (sectorValue > MAX_SECTORS) {
+//             // invalid, ask again
+//             Serial.print("Sector does not exist! Enter sector ");
+//             Serial.print(currentSector);
+//             Serial.print(", digit 1: ");
+//             digitCount = 0;
 
-          } else {
-            // valid, store in the correct variable
-            if (currentSector == 1) sector1 = sectorValue;
-            if (currentSector == 2) sector2 = sectorValue;
-            if (currentSector == 3) sector3 = sectorValue;
+//           } else {
+//             // valid, store in the correct variable
+//             if (currentSector == 1) sector1 = sectorValue;
+//             if (currentSector == 2) sector2 = sectorValue;
+//             if (currentSector == 3) sector3 = sectorValue;
 
-            if (currentSector < 3) {
-              // move on to next sector
-              currentSector++;
-              digitCount = 0;
-              Serial.print("Enter sector ");
-              Serial.print(currentSector);
-              Serial.print(", digit 1: ");
+//             if (currentSector < 3) {
+//               // move on to next sector
+//               currentSector++;
+//               digitCount = 0;
+//               Serial.print("Enter sector ");
+//               Serial.print(currentSector);
+//               Serial.print(", digit 1: ");
 
-            } else {
-              // all 3 sectors entered, move the arm
-              Serial.println("All sectors received!");
-              //moveToSector(sector1);
-              //moveToSector(sector2);
-              //moveToSector(sector3);
+//             } else {
+//               // all 3 sectors entered, move the arm
+//               Serial.println("All sectors received!");
+//               moveToSector(sector1);
+//               moveToSector(sector2);
+//               moveToSector(sector3);
 
-              // reset
-              started = false;
-              currentSector = 1;
-              digitCount = 0;
-              Serial.println("Press * to start again...");
-            }
-          }
-        }
-      }
-    }
-  }
-}
+//               // reset
+//               started = false;
+//               currentSector = 1;
+//               digitCount = 0;
+//               Serial.println("Press * to start again...");
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+// }
