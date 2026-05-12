@@ -86,8 +86,8 @@ void setup() {
     lastAngles = {84, 165, 0, 177};
     // delay(1000);
 
-    stepper.setMaxSpeed(800);      // steps per second
-    stepper.setAcceleration(500);   // steps per second
+    stepper.setMaxSpeed(400);      // adjusted arbitrarily, steps per second
+    stepper.setAcceleration(300);   // adjusted arbitrarily, steps per second
     stepper.setCurrentPosition(0);
 
 }
