@@ -17,7 +17,7 @@ const int dirPin    = 2;  // Tells the driver which direction to go
 
 const int MAX_SECTORS = 23; // maximum input for keypad
 const int STEPS_PER_ROTATION = 500;    
-const int STEPS_PER_SECTOR   = (STEPS_PER_ROTATION / MAX_SECTORS); 
+const int STEPS_PER_SECTOR   = (STEPS_PER_ROTATION /(MAX_SECTORS+1)); 
 
 // global variables
 Servo shoulder;
