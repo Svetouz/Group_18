@@ -161,8 +161,7 @@ void loop(){
               reachAndGrab();       
                      // reset
               started = false;
-              currentSector = sector3;
-              moveToSector(1);
+              moveToSector(0);
               delay(2000);
               digitCount = 0;
               Serial.println("Press * to start again...");
