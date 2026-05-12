@@ -98,16 +98,19 @@ void reachAndGrab(){
   //(angles are placeholders and need to be adjusted):
   
   //move above target
-  writeServos(30,-1,-1,-1);
-  //Open gripper
-  writeServos(-1, -1, -1, openGrip);
+  writeServos(-1,110,-1,closeGrip);
+  writeServos(70,-1,170,openGrip);
 
   // Move into grip position
-  writeServos(25, 120, 160, -1);
+  writeServos(20,110,170,-1);
   
   // Close gripper
-  writeServos(-1,-1,-1,closeGrip); 
+  writeServos(-1,-1,-1,closeGrip);
+  delay(500);
+  // Move to carry position
+  writeServos(70, 110, 130, -1);  
+}
 
-  // Move back to starting position
-  writeServos(startShoulder, startElbow, startWrist, -1);  
+void setDown(){
+  
 }
