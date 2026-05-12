@@ -102,7 +102,7 @@ void loop(){
     if (!started) {
       if (key == '*') {
         started = true;
-        currentSector = 1;
+        currentSector = 0;
         digitCount = 0;
         Serial.print("Enter sector 1, digit 1: ");
       }
@@ -125,7 +125,7 @@ void loop(){
           int sectorValue = (firstDigit - '0') * 10 + (key - '0');
           Serial.println(key);
 
-          if (sectorValue > MAX_SECTORS) {
+          if (sectorValue > MAX_SECTORS || sectorValue < 0) {
             // invalid, ask again
             Serial.print("Sector does not exist! Enter sector ");
             Serial.print(currentSector);
