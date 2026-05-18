@@ -1,8 +1,8 @@
-// #include <Arduino.h>
-// #include "Servo.h"
-// #include "Reach_and_grab.h"
+#include <Arduino.h>
+#include "Servo.h"
+#include "Reach_and_grab.h"
 
-// //Global Variables
+//Global Variables
 
 int startShoulder = 113; // 0-113 anticlockwise
 int startElbow = 130; // 0-130 clockwise
@@ -53,22 +53,25 @@ ServoAngles writeServos(int angle1 = -1, int angle2 = -1, int angle3 = -1,
     return lastAngles;
 }
 
-// void reachAndGrab(){
-//   // Opens the gripper and moves the arm into grip position, 
-//   // close the gripper, and then moves arm into the carrying position.
-//   //(angles are placeholders and need to be adjusted):
+void reachAndGrab(){
+  // Opens the gripper and moves the arm into grip position, 
+  // close the gripper, and then moves arm into the carrying position.
+  //(angles are placeholders and need to be adjusted):
   
   //move above target
-  writeServos(30,-1,-1,-1);
-  //Open gripper
-  writeServos(-1, -1, -1, openGrip);
+  writeServos(-1,110,-1,closeGrip);
+  writeServos(70,-1,170,openGrip);
 
   // Move into grip position
-  writeServos(25, 120, 160, -1);
+  writeServos(20,110,170,-1);
   
   // Close gripper
-  writeServos(-1,-1,-1,closeGrip); 
+  writeServos(-1,-1,-1,closeGrip);
+  delay(500);
+  // Move to carry position
+  writeServos(70, 110, 130, -1);  
+}
 
-  // Move back to starting position
-  writeServos(startShoulder, startElbow, startWrist, -1);  
+void setDown(){
+  
 }
