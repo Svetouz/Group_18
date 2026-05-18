@@ -6,16 +6,21 @@
 
 
 // Servos (PWM pins)
-const int SHOULDER_PWM_PIN = 8; //needs 1.8 amps alone
-const int ELBOW_PWM_PIN = 9;
-const int WRIST_PWM_PIN = 10;
-const int GRIPPER_PWM_PIN = 11;
+const int SHOULDER_PWM_PIN = 10; //needs 1.8 amps alone
+const int ELBOW_PWM_PIN = 11;
+const int WRIST_PWM_PIN = 12;
+const int GRIPPER_PWM_PIN = 13;
+
+const int stepPin   = 3;  
+const int dirPin    = 2;
 
 // Servo variables
 Servo shoulder;
 Servo elbow;
 Servo wrist;
 Servo gripper;
+
+AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 
 // Helper functions
 
@@ -27,23 +32,35 @@ void setup() {
     
     Serial.println("Enter servo name (shoulder, elbow, wrist, gripper):");
 
+
+    // stepper.setMaxSpeed(400);      // adjusted arbitrarily, steps per second
+    // stepper.setAcceleration(300);   // adjusted arbitrarily, steps per second
+    // stepper.setCurrentPosition(0);
     //Servos Setup - attach and immediately write to establish position
     shoulder.attach(SHOULDER_PWM_PIN);
-    shoulder.write(113);
+    //shoulder.write(113);
+    //targetAngles[0] = 113; // Set initial target angle for shoulder
+    //delay(300); // Short delay to ensure servo moves to initial position
     
     elbow.attach(ELBOW_PWM_PIN);
-    elbow.write(90);
+    // elbow.write(90);
+    //targetAngles[1] = 90; // Set initial target angle for elbow
+    //delay(300); // Short delay to ensure servo moves to initial position
     
     wrist.attach(WRIST_PWM_PIN);
-    wrist.write(0);
-    
+    // wrist.write(0);
+    //targetAngles[2] = 0; // Set initial target angle for wrist
+    ////delay(300); // Short delay to ensure servo moves to initial position
+
     gripper.attach(GRIPPER_PWM_PIN);
-    gripper.write(177);
-    
+    // gripper.write(177);
+    //targetAngles[3] = 177; // Set initial target angle for gripper
+    ////delay(300); // Short delay to ensure servo moves to initial position
+
     // Sync lastAngles with initial positions so writeServos knows where we are
     lastAngles = {113, 90, 0, 177};
-    
-    delay(1000);
+    writeServos(113, 90, 0, 177, 20); // Move to initial positions with speed 20
+    // delay(5000);
 
 }
 

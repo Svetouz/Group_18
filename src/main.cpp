@@ -7,10 +7,10 @@
 
 
 // Servos (PWM pins)
-const int SHOULDER_PWM_PIN = 22; //needs 1.8 amps alone
-const int ELBOW_PWM_PIN = 24;
-const int WRIST_PWM_PIN = 26;
-const int GRIPPER_PWM_PIN = 28;
+const int SHOULDER_PWM_PIN = 10; //needs 1.8 amps alone
+const int ELBOW_PWM_PIN = 11;
+const int WRIST_PWM_PIN = 12;
+const int GRIPPER_PWM_PIN = 13;
 
 const int stepPin   = 3;  
 const int dirPin    = 2;  // Tells the driver which direction to go
@@ -40,8 +40,8 @@ char keys[ROWS][COLS] = {
   {'*','0','#','D'}
 };
 
-byte rowPins[ROWS] = {11, 10, 9, 8};
-byte colPins[COLS] = {7, 6, 5, 4};
+byte rowPins[ROWS] = {22, 24, 26, 28};
+byte colPins[COLS] = {23, 25, 27, 29};
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
@@ -67,23 +67,22 @@ void setup() {
     Serial.begin(9600);
     delay(1000); // Wait for serial to stabilize
     
-    Serial.println("Enter servo name (shoulder, elbow, wrist, gripper):");
-
     //Servos Setup - attach and immediately write to establish position
     shoulder.attach(SHOULDER_PWM_PIN);
-    shoulder.write(84);
+    //shoulder.write(84);
     
     elbow.attach(ELBOW_PWM_PIN);
-    elbow.write(70);
+    //elbow.write(70);
     
     wrist.attach(WRIST_PWM_PIN);
-    wrist.write(0);
+    //wrist.write(0);
     
     gripper.attach(GRIPPER_PWM_PIN);
-    gripper.write(177);
+    //gripper.write(177);
     
     // Sync lastAngles with initial positions so writeServos knows where we are
-    lastAngles = {84, 165, 0, 177};
+    lastAngles = {113, 90, 0, 177};
+    writeServos(113, 90, 0, 177, 15); // Move to initial positions with speed 15
     // delay(1000);
 
     stepper.setMaxSpeed(400);      // adjusted arbitrarily, steps per second
