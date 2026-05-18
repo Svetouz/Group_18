@@ -1,5 +1,32 @@
-#include <Keypad.h>
-#include <Servo.h>
+ #include <Keypad.h>
+ #include <AccelStepper.h> 
+
+ // wireing for half steps:
+ //M0 → 3.3V
+ //M1 → GND
+ //M2 → GND
+
+//MS1	MS2	MS3	Microstep Resolution
+//Low	Low	 Low	Full step
+//High	Low	 Low	Half step
+//Low	High Low	Quarter step
+//High	High Low	Eighth step
+//High	High High	Sixteenth step
+
+// --- Pin definitions ---
+const int stepPin   = 3;  
+const int dirPin    = 4;  // Tells the driver which direction to go
+//const int enablePin = 5;  // grounded in Fabio's pin setup, active LOW
+const int zeroPin   = 6;  // Button that sets the current position as zero
+#define MS1 4    // connect M0 to Arduino pin 4
+#define MS2 5    // connect M1 to Arduino pin 5
+#define MS3 6    // connect M2 to Arduino pin 6
+const int MAX_SECTORS = 23; // maximal input for keypad
+#define STEPS_PER_ROTATION 400    
+#define STEPS_PER_SECTOR   (STEPS_PER_ROTATION / MAX_SECTORS) 
+
+// Create a stepper object using the AccelStepper library
+AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 
 // --- keypad setup ---
 const byte ROWS = 4;
@@ -17,11 +44,6 @@ byte colPins[COLS] = {5, 4, 3, 2};
 
 Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
-// --- servo setup ---
-Servo armServo;
-const int SERVO_PIN = 11;
-const int MAX_SECTORS = 23;
-
 // --- state tracking ---
 bool started = false;
 int currentSector = 1;    // which sector we are currently entering (1, 2 or 3)
@@ -34,21 +56,36 @@ int sector2 = 0;
 int sector3 = 0;
 
 void moveToSector(int sector) {
-  int angle = 180 * ((float)sector / MAX_SECTORS);
-  Serial.print("Moving to sector ");
-  Serial.print(sector);
-  Serial.print(" (");
-  Serial.print(angle);
-  Serial.println(" degrees)");
-  armServo.write(angle);
-  delay(1000);
+   long targetStep = sector * STEPS_PER_SECTOR;
+  stepper.runToNewPosition(targetStep);
 }
 
+// ammount of steps in a full rotation is 200
+// so 200 step devided by 24 sectors
+
 void setup() {
-  armServo.attach(SERVO_PIN);
   Serial.begin(9600);
   Serial.println("Press * to start...");
+
+  
+  pinMode(zeroPin, INPUT_PULLUP);
+
+  stepper.setMaxSpeed(800);
+
+  stepper.setAcceleration(500);
+
+  stepper.setCurrentPosition(0);
+
+  pinMode(MS1, OUTPUT);
+  pinMode(MS2, OUTPUT);
+  pinMode(MS3, OUTPUT);
+
+  // Half step = HIGH, LOW, LOW
+  digitalWrite(MS1, HIGH);
+  digitalWrite(MS2, LOW);
+  digitalWrite(MS3, LOW);
 }
+
 
 void loop() {
   char key = keypad.getKey();
@@ -107,6 +144,7 @@ void loop() {
               // all 3 sectors entered, move the arm
               Serial.println("All sectors received!");
               moveToSector(sector1);
+              // delay or code for grabing diabolo 
               moveToSector(sector2);
               moveToSector(sector3);
 

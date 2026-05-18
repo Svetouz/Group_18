@@ -6,10 +6,10 @@
 
 
 // Servos (PWM pins)
-const int SHOULDER_PWM_PIN = 8; //needs 1.8 amps alone
-const int ELBOW_PWM_PIN = 9;
-const int WRIST_PWM_PIN = 10;
-const int GRIPPER_PWM_PIN = 11;
+const int SHOULDER_PWM_PIN = 22; //needs 1.8 amps alone
+const int ELBOW_PWM_PIN = 24;
+const int WRIST_PWM_PIN = 26;
+const int GRIPPER_PWM_PIN = 28;
 
 // Servo variables
 Servo shoulder;
@@ -29,10 +29,10 @@ void setup() {
 
     //Servos Setup - attach and immediately write to establish position
     shoulder.attach(SHOULDER_PWM_PIN);
-    shoulder.write(113);
+    shoulder.write(84);
     
     elbow.attach(ELBOW_PWM_PIN);
-    elbow.write(90);
+    elbow.write(165);
     
     wrist.attach(WRIST_PWM_PIN);
     wrist.write(0);
@@ -41,88 +41,230 @@ void setup() {
     gripper.write(177);
     
     // Sync lastAngles with initial positions so writeServos knows where we are
-    lastAngles = {113, 90, 0, 177};
+    lastAngles = {84, 165, 0, 177};
     
     delay(1000);
 
 }
 
+// //writeServos test
+// void loop(){
+//   writeServos(84, 165, 0, 177, 30);
+
+// }
+
+// //writeServos test with serial input
+// void loop(){
+//   if (Serial.available() > 0) {
+//     Serial.println("Enter shoulder angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int shoulder_angle = Serial.readStringUntil('\n').toInt();
+    
+//     Serial.println("Enter elbow angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int elbow_angle = Serial.readStringUntil('\n').toInt();
+    
+//     Serial.println("Enter wrist angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int wrist_angle = Serial.readStringUntil('\n').toInt();
+    
+//     Serial.println("Enter gripper angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int gripper_angle = Serial.readStringUntil('\n').toInt();
+    
+//     // Call writeServos with all angles
+//     writeServos(shoulder_angle, elbow_angle, wrist_angle, gripper_angle, 20);
+//     Serial.println("Servos moved to (" + String(shoulder_angle) + ", " + String(elbow_angle) + ", " + String(wrist_angle) + ", " + String(gripper_angle) + ")\n");
+//   }
+// }
 
 //Old serial input testing (without writeServos)
 void loop(){
-  static int targetAngles[4] = {113, 90, 0, 177}; // Default angles
-  static String currentServo = ""; // Remember the last servo name
-
-  // Check for Serial input
   if (Serial.available() > 0) {
-    String input = Serial.readStringUntil('\n');
-    input.trim();
-    input.toLowerCase();
-
-    // Check if the input is a servo name
-    if (input == "shoulder" || input == "elbow" || input == "wrist" || input == "gripper") {
-      currentServo = input;
-      Serial.println("Selected servo: " + currentServo);
-      Serial.println("Enter angle:");
-      return;
+    String servo_name = Serial.readStringUntil('\n');
+    servo_name.trim();
+    servo_name.toLowerCase();
+    
+    Serial.println("Enter angle (0-180):");
+    while (Serial.available() == 0) {
+      delay(10);
     }
-
-    // If the input is not a servo name, treat it as an angle
-    if (currentServo != "") {
-      // Check if the input is a valid integer
-      bool isValidInt = true;
-      for (unsigned int i = 0; i < input.length(); i++) {
-        if (!isDigit(input[i])) {
-          isValidInt = false;
-          break;
-        }
-      }
-
-      if (!isValidInt) {
-        Serial.println("Invalid input. Please enter a valid integer angle.");
-        Serial.println("Enter angle:");
-        return;
-      }
-
-      int angle = input.toInt();
-
-      // Constrain angle based on the current servo
-      if (currentServo == "shoulder") {
-        if (angle < 0 || angle > 113) {
-          Serial.println("Error: Shoulder angle must be between 0 and 113.");
-        } else {
-          targetAngles[0] = angle;
-          Serial.println("Shoulder set to " + String(angle) + " degrees");
-        }
-      } else if (currentServo == "elbow") {
-        if (angle < 0 || angle > 130) {
-          Serial.println("Error: Elbow angle must be between 0 and 130.");
-        } else {
-          targetAngles[1] = angle;
-          Serial.println("Elbow set to " + String(angle) + " degrees");
-        }
-      } else if (currentServo == "wrist") {
-        if (angle < 0 || angle > 180) {
-          Serial.println("Error: Wrist angle must be between 0 and 180.");
-        } else {
-          targetAngles[2] = angle;
-          Serial.println("Wrist set to " + String(angle) + " degrees");
-        }
-      } else if (currentServo == "gripper") {
-        if (angle < 90 || angle > 177) {
-          Serial.println("Error: Gripper angle must be between 90 and 177.");
-        } else {
-          targetAngles[3] = angle;
-          Serial.println("Gripper set to " + String(angle) + " degrees");
-        }
-      }
+    
+    String angle_str = Serial.readStringUntil('\n');
+    angle_str.trim();
+    int angle = angle_str.toInt();
+    
+    // Constrain angle to valid range
+    angle = constrain(angle, 0, 180);
+    
+    // Write to appropriate servo
+    if (servo_name == "shoulder") {
+      shoulder.write(angle);
+      Serial.println("Shoulder set to " + String(angle) + " degrees");
+    } else if (servo_name == "elbow") {
+      elbow.write(angle);
+      Serial.println("Elbow set to " + String(angle) + " degrees");
+    } else if (servo_name == "wrist") {
+      wrist.write(angle);
+      Serial.println("Wrist set to " + String(angle) + " degrees");
+    } else if (servo_name == "gripper") {
+      gripper.write(angle);
+      Serial.println("Gripper set to " + String(angle) + " degrees");
     } else {
-      Serial.println("Please specify a servo name first (shoulder, elbow, wrist, gripper).");
+      Serial.println("Unknown servo: " + servo_name);
     }
-
-    Serial.println("\nEnter servo name (shoulder, elbow, wrist, gripper) or angle:");
+    
+    Serial.println("\nEnter servo name (shoulder, elbow, wrist, gripper):");
   }
-
-  // Continuously call writeServos to update servo positions
-  writeServos(targetAngles[0], targetAngles[1], targetAngles[2], targetAngles[3], 20);
 }
+  
+  // for finding endopoints of a servo (currently wrist)
+  // for (int i = 180; i>0 ; i = i -2)
+  // {
+  //   writeServos(0,0,0,i);    
+  //   Serial.println("Angle: " + i);
+  //   delay(250);
+  // };
+#include <Servo.h>
+#include <AccelStepper.h>
+#include <Wire.h>
+#include <VL53L0X.h>
+#include "Reach_and_grab.h"
+
+
+// Servos (PWM pins)
+const int SHOULDER_PWM_PIN = 22; //needs 1.8 amps alone
+const int ELBOW_PWM_PIN = 24;
+const int WRIST_PWM_PIN = 26;
+const int GRIPPER_PWM_PIN = 28;
+
+// Servo variables
+Servo shoulder;
+Servo elbow;
+Servo wrist;
+Servo gripper;
+
+// Helper functions
+
+
+void setup() {
+    // Start serial for debugging
+    Serial.begin(9600);
+    delay(1000); // Wait for serial to stabilize
+    
+    Serial.println("Enter servo name (shoulder, elbow, wrist, gripper):");
+
+    //Servos Setup - attach and immediately write to establish position
+    shoulder.attach(SHOULDER_PWM_PIN);
+    shoulder.write(84);
+    
+    elbow.attach(ELBOW_PWM_PIN);
+    elbow.write(165);
+    
+    wrist.attach(WRIST_PWM_PIN);
+    wrist.write(0);
+    
+    gripper.attach(GRIPPER_PWM_PIN);
+    gripper.write(177);
+    
+    // Sync lastAngles with initial positions so writeServos knows where we are
+    lastAngles = {84, 165, 0, 177};
+    
+    delay(1000);
+
+}
+
+// //writeServos test
+// void loop(){
+//   writeServos(84, 165, 0, 177, 30);
+
+// }
+
+// //writeServos test with serial input
+// void loop(){
+//   if (Serial.available() > 0) {
+//     Serial.println("Enter shoulder angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int shoulder_angle = Serial.readStringUntil('\n').toInt();
+    
+//     Serial.println("Enter elbow angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int elbow_angle = Serial.readStringUntil('\n').toInt();
+    
+//     Serial.println("Enter wrist angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int wrist_angle = Serial.readStringUntil('\n').toInt();
+    
+//     Serial.println("Enter gripper angle (-1 to skip):");
+//     while (Serial.available() == 0) {
+//       delay(10);
+//     }
+//     int gripper_angle = Serial.readStringUntil('\n').toInt();
+    
+//     // Call writeServos with all angles
+//     writeServos(shoulder_angle, elbow_angle, wrist_angle, gripper_angle, 20);
+//     Serial.println("Servos moved to (" + String(shoulder_angle) + ", " + String(elbow_angle) + ", " + String(wrist_angle) + ", " + String(gripper_angle) + ")\n");
+//   }
+// }
+
+//Old serial input testing (without writeServos)
+void loop(){
+  if (Serial.available() > 0) {
+    String servo_name = Serial.readStringUntil('\n');
+    servo_name.trim();
+    servo_name.toLowerCase();
+    
+    Serial.println("Enter angle (0-180):");
+    while (Serial.available() == 0) {
+      delay(10);
+    }
+    
+    String angle_str = Serial.readStringUntil('\n');
+    angle_str.trim();
+    int angle = angle_str.toInt();
+    
+    // Constrain angle to valid range
+    angle = constrain(angle, 0, 180);
+    
+    // Write to appropriate servo
+    if (servo_name == "shoulder") {
+      shoulder.write(angle);
+      Serial.println("Shoulder set to " + String(angle) + " degrees");
+    } else if (servo_name == "elbow") {
+      elbow.write(angle);
+      Serial.println("Elbow set to " + String(angle) + " degrees");
+    } else if (servo_name == "wrist") {
+      wrist.write(angle);
+      Serial.println("Wrist set to " + String(angle) + " degrees");
+    } else if (servo_name == "gripper") {
+      gripper.write(angle);
+      Serial.println("Gripper set to " + String(angle) + " degrees");
+    } else {
+      Serial.println("Unknown servo: " + servo_name);
+    }
+    
+    Serial.println("\nEnter servo name (shoulder, elbow, wrist, gripper):");
+  }
+}
+  
+  // for finding endopoints of a servo (currently wrist)
+  // for (int i = 180; i>0 ; i = i -2)
+  // {
+  //   writeServos(0,0,0,i);    
+  //   Serial.println("Angle: " + i);
+  //   delay(250);
+  // };
