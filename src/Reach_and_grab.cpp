@@ -77,5 +77,23 @@ void reachAndGrab(){
 }
 
 void setDown(){
+  // Moves the arm into grip position, opens the gripper at the bottom,
+  // closes the gripper, and then moves arm back to resting position above target.
   
+  // Move into grip position
+  writeServos(20,110,140,-1);
+
+  // Open gripper at the bottom
+  writeServos(-1,-1,-1,openGrip);
+  delay(500);
+
+  //lift gripper
+  writeServos(80,70,140,-1);
+
+  // Close gripper
+  writeServos(-1,-1,-1,closeGrip);
+  delay(500);
+
+  // Move back to resting position above target
+  writeServos(80,70,140,-1);
 }

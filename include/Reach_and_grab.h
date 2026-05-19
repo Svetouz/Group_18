@@ -18,5 +18,6 @@ extern ServoAngles lastAngles;
 
 ServoAngles writeServos(int angle1 = -1, int angle2 = -1, int angle3 = -1, int angle4 = -1, int speed = 20);
 void reachAndGrab();
+void setDown();
 
 #endif
