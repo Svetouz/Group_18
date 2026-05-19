@@ -5,7 +5,7 @@
 //Global Variables
 
 int startShoulder = 113; // 0-113 anticlockwise
-int startElbow = 130; // 0-130 clockwise
+int startElbow = 135; // 0-140 clockwise
 int startWrist = 0; //  0-180 anticlockwise
 int openGrip = 110; // 90-178 anticlockwise
 int closeGrip = 177; // 178 pulls more, firmer grip or waste?
@@ -16,7 +16,7 @@ ServoAngles lastAngles = {startShoulder, startElbow, startWrist, closeGrip};
 
 
 ServoAngles writeServos(int angle1 = -1, int angle2 = -1, int angle3 = -1,
-                        int angle4 = -1, int speed = 20) {
+                        int angle4 = -1, int speed = 15) {
     static unsigned long lastUpdate = 0;
     static int currentAngles[4] = {lastAngles.angle1, lastAngles.angle2, lastAngles.angle3, lastAngles.angle4};
     static int targetAngles[4] = {lastAngles.angle1, lastAngles.angle2, lastAngles.angle3, lastAngles.angle4};
@@ -26,28 +26,31 @@ ServoAngles writeServos(int angle1 = -1, int angle2 = -1, int angle3 = -1,
     if (angle2 != -1) targetAngles[1] = angle2;
     if (angle3 != -1) targetAngles[2] = angle3;
     if (angle4 != -1) targetAngles[3] = angle4;
+    
+    while(currentAngles[0] != targetAngles[0] || currentAngles[1] != targetAngles[1] || 
+          currentAngles[2] != targetAngles[2] || currentAngles[3] != targetAngles[3]) {
+        // Check if it's time to update the servo positions
+        if (millis() - lastUpdate >= speed) {
+            lastUpdate = millis();
 
-    // Check if it's time to update the servo positions
-    if (millis() - lastUpdate >= speed) {
-        lastUpdate = millis();
-
-        // Update each servo incrementally
-        for (int i = 0; i < 4; i++) {
-            if (currentAngles[i] < targetAngles[i]) {
-                currentAngles[i]++;
-            } else if (currentAngles[i] > targetAngles[i]) {
-                currentAngles[i]--;
+            // Update each servo incrementally
+            for (int i = 0; i < 4; i++) {
+                if (currentAngles[i] < targetAngles[i]) {
+                    currentAngles[i]++;
+                } else if (currentAngles[i] > targetAngles[i]) {
+                    currentAngles[i]--;
+                }
             }
+
+            // Write the updated angles to the servos
+            shoulder.write(currentAngles[0]);
+            elbow.write(currentAngles[1]);
+            wrist.write(currentAngles[2]);
+            gripper.write(currentAngles[3]);
+
+            // Update the lastAngles structure
+            lastAngles = {currentAngles[0], currentAngles[1], currentAngles[2], currentAngles[3]};
         }
-
-        // Write the updated angles to the servos
-        shoulder.write(currentAngles[0]);
-        elbow.write(currentAngles[1]);
-        wrist.write(currentAngles[2]);
-        gripper.write(currentAngles[3]);
-
-        // Update the lastAngles structure
-        lastAngles = {currentAngles[0], currentAngles[1], currentAngles[2], currentAngles[3]};
     }
 
     return lastAngles;
