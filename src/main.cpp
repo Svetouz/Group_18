@@ -59,7 +59,11 @@ int sector3 = 0;
 void moveToSector(int sector) {
    long targetStep = sector * STEPS_PER_SECTOR;
    stepper.moveTo(targetStep);
+
+   // Ensure the stepper completes its movement
+   while (stepper.distanceToGo() != 0) {
    stepper.run();
+   }
 }
 
 void setup() {
