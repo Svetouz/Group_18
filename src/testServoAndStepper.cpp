@@ -1,0 +1,232 @@
+#include <Servo.h>
+#include <AccelStepper.h>
+#include <Wire.h>
+#include <VL53L0X.h>
+#include "Reach_and_grab.h"
+
+// Servos (PWM pins)
+const int SHOULDER_PWM_PIN = 10;
+const int ELBOW_PWM_PIN = 11;
+const int WRIST_PWM_PIN = 12;
+const int GRIPPER_PWM_PIN = 13;
+
+// Stepper Motor Pins
+const int DIR_PIN = 2;
+const int STEP_PIN = 3;
+
+// Microstepping Jumper Pins
+const int MS1_PIN = 34;
+const int MS2_PIN = 36;
+const int MS3_PIN = 38;
+
+// Stepper constants
+const int MAX_SECTORS = 23;
+const int STEPS_PER_ROTATION = (16 * 500) + 333;
+const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (MAX_SECTORS + 1);
+
+// Servo variables
+Servo shoulder;
+Servo elbow;
+Servo wrist;
+Servo gripper;
+
+// Stepper
+AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
+int targetSector = 1;
+
+// Servo state tracking
+static int targetAngles[4] = {113, 90, 0, 177};
+static String currentServo = "";
+
+void setup() {
+    Serial.begin(9600);
+    delay(1000);
+
+    // --- Servo Setup ---
+    shoulder.attach(SHOULDER_PWM_PIN);
+    shoulder.write(130);
+    gripper.attach(GRIPPER_PWM_PIN);
+    gripper.write(177);
+    delay(300);
+    wrist.attach(WRIST_PWM_PIN);
+    wrist.write(0);
+    delay(150);
+    elbow.attach(ELBOW_PWM_PIN);
+    elbow.write(130);
+    delay(150);
+
+    lastAngles = {113, 130, 0, 177};
+
+    // --- Stepper Setup ---
+    pinMode(MS1_PIN, OUTPUT);
+    pinMode(MS2_PIN, OUTPUT);
+    pinMode(MS3_PIN, OUTPUT);
+
+    digitalWrite(MS1_PIN, HIGH);
+    digitalWrite(MS2_PIN, HIGH);
+    digitalWrite(MS3_PIN, HIGH);
+
+    stepper.setMaxSpeed(4000);
+    stepper.setAcceleration(2000);
+    stepper.setCurrentPosition(STEPS_PER_SECTOR - STEPS_PER_SECTOR * 0.5); // Start at sector 1
+
+    // --- Print Info ---
+    Serial.println("\n========== SERVO AND STEPPER CONTROL ==========\n");
+
+    Serial.println("=== SERVO COMMANDS ===");
+    Serial.println("  - servo shoulder|elbow|wrist|gripper");
+    Serial.println("  - angle <value>");
+    Serial.println("  - reachAndGrab");
+    Serial.println("  - setDown\n");
+
+    Serial.println("=== STEPPER COMMANDS ===");
+    Serial.println("  - start: move to target sector and back");
+    Serial.println("  - sector <value>: set target sector (0-" + String(MAX_SECTORS) + ")");
+    Serial.println("  - maxspeed <value>: set motor max speed (steps/s)");
+    Serial.println("  - accel <value>: set motor acceleration (steps/s^2)\n");
+
+    Serial.println("Stepper config: " + String(MAX_SECTORS) + " sectors, " + String(STEPS_PER_SECTOR) + " steps per sector\n");
+    Serial.println("Enter command (servo shoulder, sector 5, start, reachAndGrab, etc.):");
+}
+
+void loop() {
+    while (!Serial.available()) {
+        // Wait for input
+    }
+
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+    input.toLowerCase();
+
+    // --- SERVO COMMANDS ---
+    if (input.startsWith("servo ")) {
+        String servoName = input.substring(6);
+        if (servoName == "shoulder" || servoName == "elbow" || servoName == "wrist" || servoName == "gripper") {
+            currentServo = servoName;
+            Serial.println("Selected servo: " + currentServo);
+            Serial.println("Enter angle:");
+        } else {
+            Serial.println("Invalid servo. Use: shoulder, elbow, wrist, gripper");
+        }
+    } 
+    else if (input.startsWith("angle ")) {
+        if (currentServo != "") {
+            int angle = input.substring(6).toInt();
+            bool valid = false;
+
+            if (currentServo == "shoulder") {
+                if (angle >= 0 && angle <= 129) {
+                    targetAngles[0] = angle;
+                    Serial.println("Shoulder set to " + String(angle) + "°");
+                    valid = true;
+                } else {
+                    Serial.println("Error: Shoulder angle must be between 0 and 129.");
+                }
+            } else if (currentServo == "elbow") {
+                if (angle >= 0 && angle <= 150) {
+                    targetAngles[1] = angle;
+                    Serial.println("Elbow set to " + String(angle) + "°");
+                    valid = true;
+                } else {
+                    Serial.println("Error: Elbow angle must be between 0 and 150.");
+                }
+            } else if (currentServo == "wrist") {
+                if (angle >= 0 && angle <= 180) {
+                    targetAngles[2] = angle;
+                    Serial.println("Wrist set to " + String(angle) + "°");
+                    valid = true;
+                } else {
+                    Serial.println("Error: Wrist angle must be between 0 and 180.");
+                }
+            } else if (currentServo == "gripper") {
+                if (angle >= 90 && angle <= 177) {
+                    targetAngles[3] = angle;
+                    Serial.println("Gripper set to " + String(angle) + "°");
+                    valid = true;
+                } else {
+                    Serial.println("Error: Gripper angle must be between 90 and 177.");
+                }
+            }
+        } else {
+            Serial.println("Please select a servo first (servo shoulder, servo elbow, etc.)");
+        }
+    }
+    // --- STEPPER COMMANDS ---
+    else if (input.startsWith("sector ")) {
+        int newSector = input.substring(7).toInt();
+        if (newSector >= 0 && newSector <= MAX_SECTORS) {
+            targetSector = newSector;
+            Serial.println("Target sector set to: " + String(targetSector));
+        } else {
+            Serial.println("Invalid sector. Valid range: 0 to " + String(MAX_SECTORS));
+        }
+    }
+    else if (input.startsWith("maxspeed ")) {
+        int newMaxSpeed = input.substring(9).toInt();
+        if (newMaxSpeed > 0) {
+            stepper.setMaxSpeed(newMaxSpeed);
+            Serial.println("Max speed set to: " + String(newMaxSpeed) + " steps/s");
+        } else {
+            Serial.println("Invalid speed value.");
+        }
+    }
+    else if (input.startsWith("accel ")) {
+        int newAccel = input.substring(6).toInt();
+        if (newAccel > 0) {
+            stepper.setAcceleration(newAccel);
+            Serial.println("Acceleration set to: " + String(newAccel) + " steps/s^2");
+        } else {
+            Serial.println("Invalid acceleration value.");
+        }
+    }
+    else if (input == "start") {
+
+        long targetStep = targetSector * STEPS_PER_SECTOR - (STEPS_PER_SECTOR * 1.5);
+
+        Serial.println("Moving to sector " + String(targetSector) + " (" + String(targetStep) + " steps)...");
+
+        stepper.moveTo(targetStep);
+        while (stepper.distanceToGo() != 0) {
+            stepper.run();
+        }
+
+        delay(300);
+
+        // stepper.moveTo(0);
+        // while (stepper.distanceToGo() != 0) {
+        //     stepper.run();
+        // }
+
+        Serial.println("Stepper movement complete.");
+    }
+    // --- FUNCTION COMMANDS ---
+    else if (input == "reachandgrab") {
+        Serial.println("Executing reachAndGrab()...");
+        reachAndGrab();
+        Serial.println("reachAndGrab() complete.");
+    }
+    else if (input == "setdown") {
+        Serial.println("Executing setDown()...");
+        setDown();
+        Serial.println("setDown() complete.");
+    }
+    else if (input == "help") {
+        Serial.println("\n========== SERVO AND STEPPER CONTROL ==========\n");
+        Serial.println("=== SERVO COMMANDS ===");
+        Serial.println("  servo shoulder|elbow|wrist|gripper");
+        Serial.println("  angle <value>");
+        Serial.println("  reachAndGrab");
+        Serial.println("  setDown\n");
+        Serial.println("=== STEPPER COMMANDS ===");
+        Serial.println("  start");
+        Serial.println("  sector <value>");
+        Serial.println("  maxspeed <value>");
+        Serial.println("  accel <value>\n");
+    }
+    else if (input != "") {
+        Serial.println("Unknown command. Type 'help' for commands.");
+    }
+
+    // Continuously update servo positions
+    writeServos(targetAngles[0], targetAngles[1], targetAngles[2], targetAngles[3], 20);
+}
