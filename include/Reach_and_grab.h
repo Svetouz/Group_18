@@ -16,7 +16,7 @@ extern Servo wrist;
 extern Servo gripper;
 extern ServoAngles lastAngles;
 
-ServoAngles writeServos(int angle1 = -1, int angle2 = -1, int angle3 = -1, int angle4 = -1, int speed = 20);
+ServoAngles writeServos(int angle1 = -1, int angle2 = -1, int angle3 = -1, int angle4 = -1, int speed = 15);
 void reachAndGrab();
 void setDown();
 
