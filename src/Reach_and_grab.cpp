@@ -7,7 +7,7 @@
 int startShoulder = 113; // 0-113 anticlockwise
 int startElbow = 135; // 0-140 clockwise
 int startWrist = 0; //  0-180 anticlockwise
-int openGrip = 110; // 90-178 anticlockwise
+int openGrip = 105; // 100-178 anticlockwise
 int closeGrip = 177; // 178 pulls more, firmer grip or waste?
 
 // To be reused to store the last written angles, initial values co-
@@ -62,17 +62,17 @@ void reachAndGrab(){
   //(angles are placeholders and need to be adjusted):
 
   // Move above target
-  writeServos(80,70,140,110);
+  writeServos(80,55,120,openGrip);
 
   // Move into grip position
-  writeServos(20,110,140,-1);
+  writeServos(40,-1,-1,-1);
 
   // Close gripper
   writeServos(-1,-1,-1,closeGrip);
   delay(500);
 
   // Move to carry position
-  writeServos(80,100,45,-1);
+  writeServos(60,55,-1,-1);
 
 }
 
@@ -81,19 +81,19 @@ void setDown(){
   // closes the gripper, and then moves arm back to resting position above target.
   
   // Move into grip position
-  writeServos(20,110,140,-1);
+  writeServos(43,55,120,-1);
 
   // Open gripper at the bottom
-  writeServos(-1,-1,-1,openGrip);
+  writeServos(-1,-1,-1,120);
   delay(500);
 
   //lift gripper
-  writeServos(80,70,140,-1);
+  writeServos(60,80,-1,-1);
 
   // Close gripper
   writeServos(-1,-1,-1,closeGrip);
   delay(500);
 
   // Move back to resting position above target
-  writeServos(80,70,140,-1);
+  writeServos(80,75,120,-1);
 }
