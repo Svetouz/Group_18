@@ -1,0 +1,147 @@
+#include <AccelStepper.h>
+#include <Servo.h>
+#include "Reach_and_grab.h"
+
+// Servos (PWM pins)
+const int SHOULDER_PWM_PIN = 10; //needs 1.8 amps alone
+const int ELBOW_PWM_PIN = 11;
+const int WRIST_PWM_PIN = 12;
+const int GRIPPER_PWM_PIN = 13;
+
+// global variables
+Servo shoulder;
+Servo elbow;
+Servo wrist;
+Servo gripper;
+
+// Define Stepper Motor Pins
+const int DIR_PIN = 2;
+const int STEP_PIN = 3;
+
+// Define Microstepping Jumper Pins
+const int MS1_PIN = 34;
+const int MS2_PIN = 36;
+const int MS3_PIN = 38;
+
+const unsigned long RUN_TIME_MS = 1500; 
+const int STEP_DELAY_US = 112; // Adjusted for 1/16 microstepping
+const int MAX_SECTORS = 23;
+const int STEPS_PER_ROTATION = (16 * 500)+333;
+const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (MAX_SECTORS + 1);
+
+AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
+
+int targetSector = 0; // Default target sector
+
+void setup() {
+    Serial.begin(9600);
+    delay(1000); // Wait for serial to stabilize
+    
+    //Servos Setup - attach and immediately write to establish position
+    elbow.attach(ELBOW_PWM_PIN);
+    elbow.write(60);
+    gripper.attach(GRIPPER_PWM_PIN);
+    gripper.write(177);
+    shoulder.attach(SHOULDER_PWM_PIN);
+    shoulder.write(80);
+    wrist.attach(WRIST_PWM_PIN);
+    wrist.write(130);
+    shoulder.write(40);
+    delay(150);
+
+
+    // Configure Microstepping pins
+    pinMode(MS1_PIN, OUTPUT);
+    pinMode(MS2_PIN, OUTPUT);
+    pinMode(MS3_PIN, OUTPUT);
+
+    digitalWrite(MS1_PIN, HIGH);
+    digitalWrite(MS2_PIN, HIGH);
+    digitalWrite(MS3_PIN, HIGH);
+
+    Serial.println("Microstepping initialized to 1/16 step mode.");
+
+    // Configure AccelStepper
+    stepper.setMaxSpeed(4000); // Default max speed
+    stepper.setAcceleration(2000); // Default acceleration
+
+    Serial.println("Default max speed: 4000 steps/s");
+    Serial.println("Default acceleration: 2000 steps/s^2");
+    Serial.println("Default target sector: " + String(targetSector));
+    Serial.println("Max sectors available: " + String(MAX_SECTORS));
+    Serial.println("Steps per sector: " + String(STEPS_PER_SECTOR));
+    Serial.println("\n=== Stepper Control ===");
+    Serial.println("Commands:");
+    Serial.println("  - start: move to target sector and back");
+    Serial.println("  - sector <value>: set target sector (0-" + String(MAX_SECTORS) + ")");
+    Serial.println("  - maxspeed <value>: set motor max speed (steps/s)");
+    Serial.println("  - accel <value>: set motor acceleration (steps/s^2)");
+    Serial.println("  - reachAndGrab: execute reachAndGrab() function");
+    Serial.println("  - setDown: execute setDown() function");
+}
+
+void loop() {
+    // Wait for Serial input before starting the iteration
+    Serial.println("Enter 'start' to begin, 'sector <value>' to set target sector, 'reachAndGrab' or 'setDown' to run functions, or adjust settings with 'maxspeed <value>' or 'accel <value>'.");
+    while (!Serial.available()) {
+        // Wait for user input
+    }
+
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    if (input.startsWith("maxspeed")) {
+        int newMaxSpeed = input.substring(9).toInt();
+        if (newMaxSpeed > 0) {
+            stepper.setMaxSpeed(newMaxSpeed);
+            Serial.println("Max speed updated to: " + String(newMaxSpeed) + " steps/s");
+        } else {
+            Serial.println("Invalid max speed value.");
+        }
+    } else if (input.startsWith("accel")) {
+        int newAccel = input.substring(6).toInt();
+        if (newAccel > 0) {
+            stepper.setAcceleration(newAccel);
+            Serial.println("Acceleration updated to: " + String(newAccel) + " steps/s^2");
+        } else {
+            Serial.println("Invalid acceleration value.");
+        }
+    } else if (input.startsWith("sector")) {
+        int newSector = input.substring(7).toInt();
+        if (newSector >= 0 && newSector <= MAX_SECTORS) {
+            targetSector = newSector;
+            Serial.println("Target sector updated to: " + String(targetSector));
+        } else {
+            Serial.println("Invalid sector value. Valid range: 0 to " + String(MAX_SECTORS));
+        }
+    } else if (input == "reachandgrab") {
+        Serial.println("Executing reachAndGrab()...");
+        reachAndGrab();
+        Serial.println("reachAndGrab() complete.");
+    } else if (input == "setdown") {
+        Serial.println("Executing setDown()...");
+        setDown();
+        Serial.println("setDown() complete.");
+    } else if (input == "start") {
+        // Perform one iteration: 0 -> targetSector -> 0
+        long targetStep = targetSector * STEPS_PER_SECTOR - (STEPS_PER_SECTOR*1.5);
+        Serial.println("Moving to sector " + String(targetSector) + " (" + String(targetStep) + " steps)...");
+        
+        stepper.moveTo(targetStep);
+        while (stepper.distanceToGo() != 0) {
+            stepper.run();
+        }
+
+        delay(300); // Pause before reversing
+
+        // stepper.moveTo(0); // Move back to the starting position
+        // while (stepper.distanceToGo() != 0) {
+        //     stepper.run();
+        // }
+
+        delay(1000); // Pause before asking for new input
+        Serial.println("Iteration complete.");
+    } else {
+        Serial.println("Invalid command. Use 'start', 'sector <value>', 'reachAndGrab', 'setDown', 'maxspeed <value>', or 'accel <value>'.");
+    }
+}
