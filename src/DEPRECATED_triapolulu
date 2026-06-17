@@ -1,0 +1,215 @@
+#include <Arduino.h>
+#include <QTRSensors.h> 
+
+// Motor Pins (Your old pinout)
+#define ENA 2
+#define IN1 3
+#define IN2 4
+#define ENB 7
+#define IN3 5
+#define IN4 6
+
+// QTR-8 Configuration
+QTRSensors qtr;
+const uint8_t SensorCount = 8;
+uint16_t sensorValues[SensorCount];
+
+// Motor Speeds 
+const int CRUISE_PWM  = 65; 
+const int TURN_PWM    = 120; 
+const int REVERSE_PWM = -40; 
+
+int lastDirection = 0; 
+bool primedForStop = false; // False = next cross-line pauses | True = next cross-line stops
+
+// This is your FIXED motor driver logic that compensates for the wiring
+void setMotorRaw(int leftPWM, int rightPWM) {
+  if (rightPWM >= 0) {
+    digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH); 
+    analogWrite(ENA, rightPWM);
+  } else {
+    digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
+    analogWrite(ENA, -rightPWM);
+  }
+
+  if (leftPWM >= 0) {
+    digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
+    analogWrite(ENB, leftPWM);
+  } else {
+    digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
+    analogWrite(ENB, -leftPWM);
+  }
+}
+
+void setup() {
+  pinMode(ENA, OUTPUT); pinMode(ENB, OUTPUT);
+  pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT); pinMode(IN4, OUTPUT);
+
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for Serial on boards that require it
+  }
+
+  qtr.setTypeRC(); 
+  qtr.setSensorPins((const uint8_t[]){52, 50, 48, 46, 53, 51, 49, 47}, SensorCount);
+
+  Serial.println("Send 's' then Enter to start calibration...");
+  while (true) {
+    if (Serial.available()) {
+      int c = Serial.read();
+      if (c == 's' || c == 'S') {
+        break;
+      }
+    }
+  }
+
+  Serial.println("Starting calibration...");
+  for (uint16_t i = 0; i < 400; i++) {
+    qtr.calibrate();
+    qtr.read(sensorValues);
+
+    Serial.print("Calib ");
+    Serial.print(i);
+    Serial.print(": ");
+    for (uint8_t j = 0; j < SensorCount; j++) {
+      Serial.print(sensorValues[j]);
+      if (j < SensorCount - 1) {
+        Serial.print(", ");
+      }
+    }
+    Serial.println();
+
+    delay(20);
+  }
+  Serial.println("Calibration complete.");
+}
+
+void loop() {
+  // readLineBlack reads the line position (0 to 7000). 3500 is center.
+  uint16_t position = qtr.readLineBlack(sensorValues);
+  const char *action = "Unknown";
+
+  Serial.print("Position: ");
+  Serial.print(position);
+  Serial.print(" | Sensors: ");
+  for (uint8_t i = 0; i < SensorCount; i++) {
+    Serial.print(sensorValues[i]);
+    if (i < SensorCount - 1) {
+      Serial.print(", ");
+    }
+  }
+  Serial.println();
+
+  // --- NEW RELAXED PAUSE/STOP DETECTION ---
+  // Count how many of the middle sensors see a deep black line
+  int blackSensorCount = 0;
+  for (uint8_t i = 1; i < 7; i++) { // Only checking index 1 to 6 (the middle 6 sensors)
+    if (sensorValues[i] > 750) {    // 750 threshold is safer than 800
+      blackSensorCount++;
+    }
+  }
+
+  // If at least 5 out of the 6 middle sensors see black, it's definitely a cross-line!
+  if (blackSensorCount >= 6) {
+     unsigned long TimeMeasurement = millis();
+    while (millis() <= TimeMeasurement + 5000)
+    {
+      if (blackSensorCount >= 6) {
+        Serial.println("Pause if, line 78");
+        action = "Cross-line pause";
+        //FIRST CROSS-LINE: 5 Second Pause
+        // setMotorRaw(55, 55); // Slight active braking/settling nudge
+        // delay(200);
+        setMotorRaw(-40,-40);   // Kill power
+        delay(150);
+        setMotorRaw(0, 0);
+        delay(5000);         // Wait 5 seconds
+      
+        setMotorRaw(CRUISE_PWM, CRUISE_PWM);
+        delay(500);
+        Serial.print("Action: ");
+        Serial.println(action);
+        break;
+      }
+    
+    // while (millis() >= TimeMeasurement + 300)
+    // {
+    //   if (blackSensorCount >= 6) {
+    // Serial.println("Pause if, line 95");
+
+    //     setMotorRaw(0, 0);
+    //     delay(10000);
+    //   }
+     
+    // }
+    // return;
+    } 
+  }
+
+  if (strcmp(action, "pause") == 0) {
+    return;
+  }
+
+  // Check if line is lost completely
+  bool lostLine = true;
+  for (uint8_t i = 0; i < SensorCount; i++) {
+    if (sensorValues[i] > 200) {
+      lostLine = false;
+      break;
+    }
+  }
+
+  // 2. Lost the Line Handling
+  if (lostLine) {
+    if (lastDirection == -1) {
+      setMotorRaw(-TURN_PWM, TURN_PWM); 
+      action = "Lost line, turning left";
+    } else if (lastDirection == 1) {
+      setMotorRaw(TURN_PWM, -TURN_PWM); 
+      action = "Lost line, turning right";
+    } else {
+      setMotorRaw(40, 40);
+      action = "Lost line, moving forward";
+    }
+    Serial.print("Action: ");
+    Serial.println(action);
+    return;
+  }
+
+  // 3. Navigation based on position thresholds
+  //turn left
+  if (position < 1500) {
+    lastDirection = -1;
+    setMotorRaw(-REVERSE_PWM, TURN_PWM); 
+    action = "Turn left";
+  } 
+  //steer left
+  else if (position >= 1500 && position < 2800) {
+    lastDirection = -1;
+    setMotorRaw(0, TURN_PWM); 
+    action = "Steer left";
+  } 
+  //go straight
+  else if (position >= 2800 && position <= 4200) {
+    setMotorRaw(CRUISE_PWM, CRUISE_PWM);
+    action = "Go straight";
+  } 
+  //steer right
+  else if (position > 4200 && position <= 5500) {
+    lastDirection = 1;
+    setMotorRaw(TURN_PWM, 0); 
+    action = "Steer right";
+  } 
+  //turn right
+  else if (position > 5500) {
+    lastDirection = 1;
+    setMotorRaw(TURN_PWM, -REVERSE_PWM);
+    action = "Turn right";
+  }
+
+  Serial.print("Action: ");
+  Serial.println(action);
+
+  //delay(1);
+}
