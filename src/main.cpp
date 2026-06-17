@@ -175,15 +175,21 @@ void loop() {
   // }
   // Serial.println();
 
-  bool leftWingSeen  = (sensorValues[0] > 700 || sensorValues[1] > 700|| sensorValues[2] > 700);
-  bool rightWingSeen = (sensorValues[6] > 700 || sensorValues[7] > 700|| sensorValues[5] > 700);
 
+  //Pausing
+
+  
+  bool leftWingSeen  = (sensorValues[0] > 700 || sensorValues[1] > 700|| sensorValues[2] > 700);
+  bool rightWingSeen = (sensorValues[5] > 700 || sensorValues[6] > 700|| sensorValues[7] > 700);
+
+  //The condition is if both 'wings' of the sensor see the line with at least
+  // one of their three outermost sensors
   if (leftWingSeen && rightWingSeen) { 
     Serial.println("ACTION: Pause detected!");
     
     if (!primedForStop) {
         // pause
-        setMotorRaw(30, 30);       // braking
+        setMotorRaw(30, 30);       // slow down before stopping
         delay(100);                
         setMotorRaw(0, 0);        
         delay(1000);              
@@ -208,7 +214,8 @@ void loop() {
       setMotorRaw(CRUISE_PWM, CRUISE_PWM);
       delay(400); 
       
-      primedForStop = true; //flag to stop the car 
+      primedForStop = true; //flag to ensure that next pause is treated as final stop
+
       
     } else {
       //delay until the car is within the final box
