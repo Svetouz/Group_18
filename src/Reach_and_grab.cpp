@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "Servo.h"
 #include "Reach_and_grab.h"
+#include <Keypad.h>
 
 //Global Variables
 
@@ -9,6 +10,27 @@ int startElbow = 135; // 0-140 clockwise
 int startWrist = 0; //  0-180 anticlockwise
 int openGrip = 105; // 100-178 anticlockwise
 int closeGrip = 177; // 178 pulls more, firmer grip or waste?
+
+const int MAX_SECTORS = 23;
+bool started = false;
+int currentSector = 1;
+int digitCount = 0;
+char firstDigit;
+int sector1 = 0, sector2 = 0, sector3 = 0;
+
+
+// Keypad Setup
+const byte ROWS = 4;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+    {'1', '2', '3', 'A'},
+    {'4', '5', '6', 'B'},
+    {'7', '8', '9', 'C'},
+    {'*', '0', '#', 'D'}
+};
+byte rowPins[ROWS] = {22, 24, 26, 28};
+byte colPins[COLS] = {23, 25, 27, 29};
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
 
 // To be reused to store the last written angles, initial values co-
 //rrespond to the starting position of the arm
@@ -96,4 +118,58 @@ void setDown(){
 
   // Move back to resting position above target
   writeServos(80,75,120,-1);
+}
+
+InputResult getInputs(){
+  char key = keypad.getKey();
+  int inputsTaken = 0;
+
+    if (key) {
+        if (!started) {
+            if (key == '*') {
+                started = true;
+                currentSector = 1;//
+                digitCount = 0;
+                Serial.print("Enter sector 1, digit 1: ");
+            }
+        } else {
+            if (key >= '0' && key <= '9') {
+                if (digitCount == 0) {
+                    firstDigit = key;
+                    digitCount = 1;
+                    Serial.println(key);
+                    Serial.print("Sector ");
+                    Serial.print(currentSector);
+                    Serial.print(", digit 2: ");
+                } else {
+                    int sectorValue = (firstDigit - '0') * 10 + (key - '0');
+                    Serial.println(key);
+
+                    if (sectorValue > MAX_SECTORS || sectorValue < 0 ) {
+                        Serial.print("Invalid sector! Enter sector ");
+                        Serial.print(currentSector);
+                        Serial.print(", digit 1: ");
+                        digitCount = 0;
+                    } else {
+                        if (currentSector == 1) sector1 = sectorValue;
+                        if (currentSector == 2) sector2 = sectorValue;
+                        if (currentSector == 3) sector3 = sectorValue;
+
+                        if (currentSector < 3) {
+                            currentSector++;
+                            digitCount = 0;
+                            Serial.print("Enter sector ");
+                            Serial.print(currentSector);
+                            Serial.print(", digit 1: ");
+                        } else {
+                            inputsTaken = 1;
+                            started = false;
+                            digitCount = 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return {sector1, sector2, sector3, inputsTaken};
 }
