@@ -14,10 +14,13 @@ repair for SIM2.
 ### main
 
 **Calibration**
-The calibration phase takes place almost immediately after the code is uploaded 
-to the arduino, which is why (as well as because the code is not designed to 
-reset after the track is complete) resetting the arduino with its inbuilt button
-before powering on the robot and calibrating is a good practice.
+Always switch on the car as soon as, or before, the calibration pahse is supposed
+to begin.The calibration phase starts almost immediately after the code is uploaded 
+to the arduino. If the arduino is plugged into a laptop and the robot is switched 
+off, the calibration phase will start while start while the sensors aren't getting power.
+The code resets when the Arduino loses power, so if you get a bad calibration, or
+you've reached the end of the track, simply power the robot off and on again to
+restart from scratch.
 
 **User Input**
 Once calibration is finished, the servos will go to their default positions, and 
