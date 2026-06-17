@@ -145,50 +145,50 @@ void loop() {
   static InputResult inputs = {0, 0, 0, false};
   static bool inputsCollected = false;
   
-  // Only collect inputs once
+  // Collect inputs once
   if (!inputsCollected) {
     inputs = getInputs();
     if (!inputs.inputsTaken) {
-      return;  // Still waiting for keypad input
+      return;  //Wait for keypad input
     }
     inputsCollected = true;
     Serial.println("=== Inputs taken, starting line navigation ===");
   }
   uint16_t position = qtr.readLineBlack(sensorValues);
 
-  // Count how many see black line
+  // Count how many sensors see the black line
   int blackSensorCount = 0;
   for (uint8_t i = 1; i < 7; i++) { 
     if (sensorValues[i] > 700) {    
       blackSensorCount++;
     }
   }
-
-  Serial.print("Position: ");
-  Serial.print(position);
-  Serial.print(" | blackSensorCount: ");
-  Serial.print(blackSensorCount);
-  Serial.print(" | Sensors: ");
-  for (uint8_t i = 0; i < 8; i++) {
-    Serial.print(sensorValues[i]);
-    if (i < 7) Serial.print(",");
-  }
-  Serial.println();
+  ////for debugging purposes only
+  // Serial.print("Position: ");
+  // Serial.print(position);
+  // Serial.print(" | blackSensorCount: ");
+  // Serial.print(blackSensorCount);
+  // Serial.print(" | Sensors: ");
+  // for (uint8_t i = 0; i < 8; i++) {
+  //   Serial.print(sensorValues[i]);
+  //   if (i < 7) Serial.print(",");
+  // }
+  // Serial.println();
 
   bool leftWingSeen  = (sensorValues[0] > 700 || sensorValues[1] > 700|| sensorValues[2] > 700);
   bool rightWingSeen = (sensorValues[6] > 700 || sensorValues[7] > 700|| sensorValues[5] > 700);
 
   if (leftWingSeen && rightWingSeen) { 
-    Serial.println("ACTION: Cross-line detected!");
+    Serial.println("ACTION: Pause detected!");
     
     if (!primedForStop) {
         // pause
-        setMotorRaw(30, 30);       // breaking
-        delay(100);
+        setMotorRaw(30, 30);       // braking
+        delay(100);                
         setMotorRaw(0, 0);        
-        delay(1000);               // pause delay
+        delay(1000);              
       
-        // Execute sequence
+        // Execute pick and place sequence
         moveToSector(inputs.sector1);
         reachAndGrab();
         delay(1000);
@@ -204,19 +204,18 @@ void loop() {
         delay(1000);
 
         moveToSector(0);
-      // Drive forward delay
+      // Drive forward to ensure the second pause line is cleared
       setMotorRaw(CRUISE_PWM, CRUISE_PWM);
       delay(400); 
       
       primedForStop = true; //flag to stop the car 
       
     } else {
-      //delay
+      //delay until the car is within the final box
       setMotorRaw(CRUISE_PWM, CRUISE_PWM);
       delay(300);
-      //stop 
+      //stop src/main.cpp
       while (true) {
-       
         setMotorRaw(0, 0); //infinite loop
         delay(1000);
       }
@@ -234,7 +233,9 @@ void loop() {
     }
   }
 
-  // lost line
+  // Lost line, keep steering in the direction you started turning
+  // The idea is not to handle actually "losing" the line, but rather to 
+  // keep turning after you've detected a corner until you're back on the line
   if (lostLine) {
     if (lastDirection == -1) {
       setMotorRaw(-TURN_PWM, TURN_PWM); 
@@ -250,7 +251,7 @@ void loop() {
   if (position < 1500) {
     Serial.println("ACTION: Turn left");
     lastDirection = -1;
-    setMotorRaw(-REVERSE_PWM, TURN_PWM); 
+    setMotorRaw(REVERSE_PWM, TURN_PWM); 
   } 
   else if (position >= 1500 && position < 2800) {
     Serial.println("ACTION: Steer left");
@@ -269,8 +270,8 @@ void loop() {
   else if (position > 5500) {
     Serial.println("ACTION: Turn right");
     lastDirection = 1;
-    setMotorRaw(TURN_PWM, -REVERSE_PWM);
+    setMotorRaw(TURN_PWM, REVERSE_PWM);
   }
 
-  delay(1);
+  delay(1); 
 }
