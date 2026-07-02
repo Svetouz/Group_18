@@ -11,13 +11,34 @@ int startWrist = 0; //  0-180 anticlockwise
 int openGrip = 105; // 100-178 anticlockwise
 int closeGrip = 177; // 178 pulls more, firmer grip or waste?
 
-const int MAX_SECTORS = 23;
+const int MAX_SECTORS = 18;
 bool started = false;
 int currentSector = 1;
 int digitCount = 0;
 char firstDigit;
 int sector1 = 0, sector2 = 0, sector3 = 0;
 
+// Mapping: index = input number (0–17), value = logical sector on the original circle (0–23)
+const int sectorMap[18] = {
+    14,  // input 0  → sector 14
+    20,  // input 1  → sector 20
+     8,  // input 2  → sector 8
+    11,  // input 3  → sector 11
+    22,  // input 4  → sector 22
+    18,  // input 5  → sector 18
+    10,  // input 6  → sector 10
+    23,  // input 7  → sector 23
+    21,  // input 8  → sector 21
+     7,  // input 9  → sector 7
+    15,  // input 10 → sector 15
+     9,  // input 11 → sector 9
+    16,  // input 12 → sector 16
+    19,  // input 13 → sector 19
+     1,  // input 14 → sector 1
+    13,  // input 15 → sector 13
+    17,  // input 16 → sector 17
+     5   // input 17 → sector 5
+};
 
 // Keypad Setup
 const byte ROWS = 4;
@@ -151,9 +172,10 @@ InputResult getInputs(){
                         Serial.print(", digit 1: ");
                         digitCount = 0;
                     } else {
-                        if (currentSector == 1) sector1 = sectorValue;
-                        if (currentSector == 2) sector2 = sectorValue;
-                        if (currentSector == 3) sector3 = sectorValue;
+                        // valid, store in the correct variable
+                        if (currentSector == 1) sector1 = sectorMap[sectorValue];
+                        if (currentSector == 2) sector2 = sectorMap[sectorValue];
+                        if (currentSector == 3) sector3 = sectorMap[sectorValue];
 
                         if (currentSector < 3) {
                             currentSector++;

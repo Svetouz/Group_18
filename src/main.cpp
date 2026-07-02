@@ -19,9 +19,9 @@ const int MS2_PIN = 36;
 const int MS3_PIN = 38;
 
 // Stepper Constants
-const int MAX_SECTORS = 23;
-const int STEPS_PER_ROTATION = (16 * 500) + 333;
-const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (MAX_SECTORS + 1);
+const int MAX_SECTORS = 18;
+const int STEPS_PER_ROTATION = (16 * 500) + 333; //3200 Fabio
+const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (24);
 const int HOME_OFFSET = 0.5 * STEPS_PER_SECTOR; // Adjust if needed
 
 // Motor pins
@@ -50,6 +50,28 @@ AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 QTRSensors qtr;
 const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
+
+// Mapping: index = input number (0–17), value = logical sector on the original circle (0–23)
+const int sectorMap[18] = {
+    14,  // input 0  → sector 14
+    20,  // input 1  → sector 20
+     8,  // input 2  → sector 8
+    11,  // input 3  → sector 11
+    22,  // input 4  → sector 22
+    18,  // input 5  → sector 18
+    10,  // input 6  → sector 10
+    23,  // input 7  → sector 23
+    21,  // input 8  → sector 21
+     7,  // input 9  → sector 7
+    15,  // input 10 → sector 15
+     9,  // input 11 → sector 9
+    16,  // input 12 → sector 16
+    19,  // input 13 → sector 19
+     1,  // input 14 → sector 1
+    13,  // input 15 → sector 13
+    17,  // input 16 → sector 17
+     5   // input 17 → sector 5
+};
 
 // flags for movements
 int lastDirection = 0; 
@@ -136,7 +158,7 @@ void setup() {
 
     stepper.setMaxSpeed(4000);
     stepper.setAcceleration(2000);
-    stepper.setCurrentPosition(STEPS_PER_SECTOR - STEPS_PER_SECTOR * 0.5);
+    stepper.setCurrentPosition(STEPS_PER_SECTOR - HOME_OFFSET);
 
     Serial.println("Press * to start entering sectors.");
 }
