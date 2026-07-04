@@ -11,8 +11,8 @@ const int WRIST_PWM_PIN = 12;
 const int GRIPPER_PWM_PIN = 13;
 
 // Stepper Motor Pins
-const int DIR_PIN = 2;
-const int STEP_PIN = 3;
+const int DIR_PIN = 8;
+const int STEP_PIN = 9;
 
 // Microstepping Jumper Pins
 const int MS1_PIN = 34;
@@ -44,18 +44,18 @@ void setup() {
 
     // --- Servo Setup ---
     shoulder.attach(SHOULDER_PWM_PIN);
-    shoulder.write(130);
+    shoulder.write(80);
     gripper.attach(GRIPPER_PWM_PIN);
     gripper.write(177);
     delay(300);
     wrist.attach(WRIST_PWM_PIN);
-    wrist.write(0);
+    wrist.write(130);
     delay(150);
     elbow.attach(ELBOW_PWM_PIN);
-    elbow.write(130);
+    elbow.write(60);
     delay(150);
 
-    lastAngles = {113, 130, 0, 177};
+    lastAngles = {80, 60, 130, 177};
 
     // --- Stepper Setup ---
     pinMode(MS1_PIN, OUTPUT);

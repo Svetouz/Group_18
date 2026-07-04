@@ -1,0 +1,122 @@
+#include <AccelStepper.h>
+#include <Servo.h>
+#include "Reach_and_grab.h"
+
+// Servos (PWM pins)
+const int SHOULDER_PWM_PIN = 10; //needs 1.8 amps alone
+const int ELBOW_PWM_PIN = 11;
+const int WRIST_PWM_PIN = 12;
+const int GRIPPER_PWM_PIN = 13;
+
+// global variables
+Servo shoulder;
+Servo elbow;
+Servo wrist;
+Servo gripper;
+// Mapping: index = input number (0–17), value = logical sector on the original circle (0–23)
+const int sectorMap[18] = {
+    9,  // input 0  → sector 14
+    18,  // input 1  → sector 20
+     5,  // input 2  → sector 8
+    8,  // input 3  → sector 11
+    21,  // input 4  → sector 22
+    16,  // input 5  → sector 18
+    7,  // input 6  → sector 10
+    22,  // input 7  → sector 23
+    19,  // input 8  → sector 21
+     4,  // input 9  → sector 7
+    15,  // input 10 → sector 15
+     6,  // input 11 → sector 9
+    11,  // input 12 → sector 16
+    20,  // input 13 → sector 19
+     23,  // input 14 → sector 1
+    10,  // input 15 → sector 13
+    17,  // input 16 → sector 17
+     3   // input 17 → sector 5
+};
+
+// Define Stepper Motor Pins
+const int DIR_PIN = 8;
+const int STEP_PIN = 9;
+
+// Define Microstepping Jumper Pins
+const int MS1_PIN = 34;
+const int MS2_PIN = 36;
+const int MS3_PIN = 38;
+
+// Stepper Constants
+const int MAX_SECTORS = 18;
+const int STEPS_PER_ROTATION = (16 * 505); //8080 from testing!
+const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (24);
+const int HOME_OFFSET = 0.5 * STEPS_PER_SECTOR; // Adjust if needed
+
+AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
+
+void moveToSector(int sector) {
+    long targetStep = sector * STEPS_PER_SECTOR + HOME_OFFSET;
+    stepper.moveTo(targetStep);
+    while (stepper.distanceToGo() != 0) {
+        stepper.run();
+    }
+}
+
+void setup() {
+    Serial.begin(9600);
+    delay(1000);
+
+    // Servo Setup
+    shoulder.attach(SHOULDER_PWM_PIN);
+    elbow.attach(ELBOW_PWM_PIN);
+    wrist.attach(WRIST_PWM_PIN);
+    gripper.attach(GRIPPER_PWM_PIN);
+
+    shoulder.write(60);
+    elbow.write(100);
+    wrist.write(0);
+    gripper.write(177);
+
+    delay(150);
+
+    // Stepper Setup
+    pinMode(MS1_PIN, OUTPUT);
+    pinMode(MS2_PIN, OUTPUT);
+    pinMode(MS3_PIN, OUTPUT);
+
+    digitalWrite(MS1_PIN, HIGH);
+    digitalWrite(MS2_PIN, HIGH);
+    digitalWrite(MS3_PIN, HIGH);
+
+    stepper.setMaxSpeed(1000);
+    stepper.setAcceleration(500);
+    stepper.setCurrentPosition(0);
+
+}
+
+void loop(){
+    Serial.println("Enter st <value> to set target step, then run to run");
+    while (!Serial.available()) {
+        // Wait for user input
+    }
+
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    if (input.startsWith("st")){
+        int targetStep = input.substring(3).toInt();
+            stepper.moveTo(targetStep);
+            Serial.println("Target step set to: " + String(targetStep));
+    }
+
+    if (input == "run") {
+        Serial.println("Running to: " + String(stepper.targetPosition()));
+        while (stepper.distanceToGo() != 0) {
+            stepper.run();
+        }
+        Serial.println("Target reached");
+    }
+    if (input.startsWith("se")){
+        int inputSector = input.substring(3).toInt();
+        int targetSector = sectorMap[inputSector];
+            moveToSector(targetSector);
+    }
+}

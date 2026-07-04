@@ -15,8 +15,8 @@ Servo wrist;
 Servo gripper;
 
 // Define Stepper Motor Pins
-const int DIR_PIN = 2;
-const int STEP_PIN = 3;
+const int DIR_PIN = 8;
+const int STEP_PIN = 9;
 
 // Define Microstepping Jumper Pins
 const int MS1_PIN = 34;
@@ -26,8 +26,9 @@ const int MS3_PIN = 38;
 const unsigned long RUN_TIME_MS = 1500; 
 const int STEP_DELAY_US = 112; // Adjusted for 1/16 microstepping
 const int MAX_SECTORS = 23;
-const int STEPS_PER_ROTATION = (16 * 500)+333;
+const int STEPS_PER_ROTATION = (16 * 505);
 const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (MAX_SECTORS + 1);
+const int HOME_OFFSET = 0.5 * STEPS_PER_SECTOR; 
 
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
@@ -64,6 +65,7 @@ void setup() {
     // Configure AccelStepper
     stepper.setMaxSpeed(4000); // Default max speed
     stepper.setAcceleration(2000); // Default acceleration
+    stepper.setCurrentPosition(STEPS_PER_SECTOR - HOME_OFFSET);
 
     Serial.println("Default max speed: 4000 steps/s");
     Serial.println("Default acceleration: 2000 steps/s^2");
@@ -124,7 +126,7 @@ void loop() {
         Serial.println("setDown() complete.");
     } else if (input == "start") {
         // Perform one iteration: 0 -> targetSector -> 0
-        long targetStep = targetSector * STEPS_PER_SECTOR - (STEPS_PER_SECTOR*1.5);
+        long targetStep = targetSector * STEPS_PER_SECTOR - (STEPS_PER_SECTOR*0.5);
         Serial.println("Moving to sector " + String(targetSector) + " (" + String(targetStep) + " steps)...");
         
         stepper.moveTo(targetStep);
