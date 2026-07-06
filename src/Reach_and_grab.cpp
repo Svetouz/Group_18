@@ -20,24 +20,24 @@ int sector1 = 0, sector2 = 0, sector3 = 0;
 
 // Mapping: index = input number (0–17), value = logical sector on the original circle (0–23)
 const int sectorMap[18] = {
-    14,  // input 0  → sector 14
-    20,  // input 1  → sector 20
-     8,  // input 2  → sector 8
-    11,  // input 3  → sector 11
-    22,  // input 4  → sector 22
-    18,  // input 5  → sector 18
-    10,  // input 6  → sector 10
-    23,  // input 7  → sector 23
-    21,  // input 8  → sector 21
-     7,  // input 9  → sector 7
-    15,  // input 10 → sector 15
-     9,  // input 11 → sector 9
-    16,  // input 12 → sector 16
-    19,  // input 13 → sector 19
-     1,  // input 14 → sector 1
-    13,  // input 15 → sector 13
-    17,  // input 16 → sector 17
-     5   // input 17 → sector 5
+    9,  // input 0 
+    18,  // input 1
+     5,  // input 2
+     8,  // input 3
+    21,  // input 4
+    16,  // input 5 
+     7,  // input 6
+    22,  // input 7
+    19,  // input 8
+     4,  // input 9
+    15,  // input 10
+     6,  // input 11
+    11,  // input 12
+    20,  // input 13
+    23,  // input 14
+    10,  // input 15
+    17,  // input 16
+     3   // input 17 
 };
 
 // Keypad Setup
@@ -105,7 +105,7 @@ void reachAndGrab(){
   //(angles are placeholders and need to be adjusted):
 
   // Move above target
-  writeServos(80,55,120,openGrip);
+  writeServos(80,55,123,openGrip);
 
   // Move into grip position
   writeServos(40,-1,-1,-1);
