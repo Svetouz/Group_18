@@ -20,9 +20,9 @@ const int MS2_PIN = 36;
 const int MS3_PIN = 38;
 
 // Stepper constants
-const int MAX_SECTORS = 23;
-const int STEPS_PER_ROTATION = (16 * 500) + 333;
-const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (MAX_SECTORS + 1);
+const int MAX_SECTORS = 17;
+const int STEPS_PER_ROTATION = (16 * 505);
+const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (24);
 
 // Servo variables
 Servo shoulder;
@@ -38,13 +38,35 @@ int targetSector = 1;
 static int targetAngles[4] = {113, 90, 0, 177};
 static String currentServo = "";
 
+// Mapping: index = input number (0–17), value = logical sector on the original circle (0–23)
+const int sectorMap[18] = {
+    9,  // input 0 
+    18,  // input 1
+     5,  // input 2
+     8,  // input 3
+    21,  // input 4
+    16,  // input 5 
+     7,  // input 6
+    22,  // input 7
+    19,  // input 8
+     4,  // input 9
+    15,  // input 10
+     6,  // input 11
+    11,  // input 12
+    20,  // input 13
+    23,  // input 14
+    10,  // input 15
+    17,  // input 16
+     3   // input 17 
+};
+
 void setup() {
     Serial.begin(9600);
     delay(1000);
 
     // --- Servo Setup ---
     shoulder.attach(SHOULDER_PWM_PIN);
-    shoulder.write(80);
+    shoulder.write(113);
     gripper.attach(GRIPPER_PWM_PIN);
     gripper.write(177);
     delay(300);
@@ -55,7 +77,7 @@ void setup() {
     elbow.write(60);
     delay(150);
 
-    lastAngles = {80, 60, 130, 177};
+    lastAngles = {113, 60, 130, 177};
 
     // --- Stepper Setup ---
     pinMode(MS1_PIN, OUTPUT);
@@ -68,7 +90,7 @@ void setup() {
 
     stepper.setMaxSpeed(4000);
     stepper.setAcceleration(2000);
-    stepper.setCurrentPosition(STEPS_PER_SECTOR - STEPS_PER_SECTOR * 0.5); // Start at sector 1
+    stepper.setCurrentPosition(-STEPS_PER_SECTOR * 0.55); // Start at sector 1
 
     // --- Print Info ---
     Serial.println("\n========== SERVO AND STEPPER CONTROL ==========\n");
@@ -155,7 +177,7 @@ void loop() {
     else if (input.startsWith("sector ")) {
         int newSector = input.substring(7).toInt();
         if (newSector >= 0 && newSector <= MAX_SECTORS) {
-            targetSector = newSector;
+            targetSector = sectorMap[newSector];
             Serial.println("Target sector set to: " + String(targetSector));
         } else {
             Serial.println("Invalid sector. Valid range: 0 to " + String(MAX_SECTORS));

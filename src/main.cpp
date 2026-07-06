@@ -19,7 +19,7 @@ const int MS2_PIN = 36;
 const int MS3_PIN = 38;
 
 // Stepper Constants
-const int MAX_SECTORS = 18;
+const int MAX_SECTORS = 17;
 const int STEPS_PER_ROTATION = (16 * 505); 
 const int STEPS_PER_SECTOR = STEPS_PER_ROTATION / (24);
 const int HOME_OFFSET = 0.5 * STEPS_PER_SECTOR; // Adjust if needed
@@ -33,8 +33,8 @@ const int IN3 = 5;
 const int IN4 = 6;
 
 // Motor Speeds 
-const int CRUISE_PWM  = 65; 
-const int TURN_PWM    = 120; 
+const int CRUISE_PWM  = 55; 
+const int TURN_PWM    = 130; //changed to 130 from 120
 const int REVERSE_PWM = -40; 
 
 // Servo Variables
@@ -158,7 +158,7 @@ void setup() {
 
     stepper.setMaxSpeed(4000);
     stepper.setAcceleration(2000);
-    stepper.setCurrentPosition(STEPS_PER_SECTOR - HOME_OFFSET);
+    stepper.setCurrentPosition(HOME_OFFSET);
 
     Serial.println("Press * to start entering sectors.");
 }
@@ -181,7 +181,7 @@ void loop() {
   // Count how many sensors see the black line
   int blackSensorCount = 0;
   for (uint8_t i = 1; i < 7; i++) { 
-    if (sensorValues[i] > 700) {    
+    if (sensorValues[i] > 650) {    //changed from 700 to 650
       blackSensorCount++;
     }
   }
@@ -201,8 +201,8 @@ void loop() {
   //Pausing
 
   
-  bool leftWingSeen  = (sensorValues[0] > 700 || sensorValues[1] > 700|| sensorValues[2] > 700);
-  bool rightWingSeen = (sensorValues[5] > 700 || sensorValues[6] > 700|| sensorValues[7] > 700);
+  bool leftWingSeen  = (sensorValues[0] > 650 || sensorValues[1] > 650|| sensorValues[2] > 650);
+  bool rightWingSeen = (sensorValues[5] > 650 || sensorValues[6] > 650|| sensorValues[7] > 650);
 
   //The condition is if both 'wings' of the sensor see the line with at least
   // one of their three outermost sensors
@@ -212,7 +212,7 @@ void loop() {
     if (!primedForStop) {
         // pause
         setMotorRaw(30, 30);       // slow down before stopping
-        delay(100);                
+        delay(400);                
         setMotorRaw(0, 0);        
         delay(1000);              
       

@@ -70,10 +70,18 @@ void setup() {
     wrist.attach(WRIST_PWM_PIN);
     gripper.attach(GRIPPER_PWM_PIN);
 
-    shoulder.write(60);
-    elbow.write(100);
-    wrist.write(0);
+    //Servos Setup - attach and immediately write to establish position
+    elbow.attach(ELBOW_PWM_PIN);
+    elbow.write(55);
+    gripper.attach(GRIPPER_PWM_PIN);
     gripper.write(177);
+    shoulder.attach(SHOULDER_PWM_PIN);
+    shoulder.write(80);
+    wrist.attach(WRIST_PWM_PIN);
+    wrist.write(160);
+    shoulder.write(40);
+    delay(150);
+
 
     delay(150);
 
